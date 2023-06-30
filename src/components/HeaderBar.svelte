@@ -31,6 +31,5 @@
     .button {
         @apply h-7 aspect-square text-lg transition-colors duration-300 rounded;
         -webkit-app-region: no-drag;
-        text-shadow: -1px -1px 0 #00000030, 1px -1px 0 #00000030, -1px 1px 0 #00000030, 1px 1px 0 #00000030;
     }
 </style>
