@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.4",
+    "@tailwindcss/forms": "^0.5.3",
     "@tauri-apps/cli": "^1.4.0",
     "@tsconfig/svelte": "^4.0.1",
     "@types/node": "^20.3.2",
@@ -26,6 +27,8 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
+    "@catppuccin/palette": "^0.1.8",
+    "@catppuccin/tailwindcss": "^0.1.6",
     "@tauri-apps/api": "^1.4.0"
   }
 }

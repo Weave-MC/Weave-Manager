@@ -4,6 +4,21 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  safelist: [
+    {
+      pattern: /bg-,+/
+    },
+    'mocha',
+    'macchiato',
+    'frappe',
+    'latte'
+  ],
+  plugins: [
+      require('@tailwindcss/forms'),
+      require('@catppuccin/tailwindcss')({
+        prefix: false,
+        defaultFlavour: 'mocha'
+      })
+  ],
 }
 
