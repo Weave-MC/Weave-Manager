@@ -21,7 +21,6 @@
     </button>
 </div>
 
-
 <script lang="ts">
     export let value
 
@@ -37,7 +36,6 @@
 
     function selectTheme(theme) {
         value = theme
-        toggleThemeSelector()
     }
 </script>
 
