@@ -1,5 +1,5 @@
 <div id="theme-selection" class="absolute bg-surface0 top-2 right-2 w-10 h-10 rounded-xl overflow-hidden">
-    <div id="selections" class="absolute w-full h-full pt-10 flex flex-col justify-around">
+    <div id="selections" class="absolute w-48 h-56 pt-10 flex flex-col justify-around">
         <div id="mocha-theme" class="theme" on:click={() => selectTheme('mocha')}>
             <h1>Mocha</h1>
         </div>
@@ -20,6 +20,7 @@
         <i class="fa-solid fa-palette"></i>
     </button>
 </div>
+
 
 <script lang="ts">
     export let value
