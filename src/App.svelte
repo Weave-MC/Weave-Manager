@@ -2,6 +2,8 @@
   import HeaderBar from "./components/HeaderBar.svelte";
   import MinecraftList from "./components/MinecraftList.svelte";
   import Settings from "./components/Settings.svelte";
+  import ModList from "./components/ModList.svelte";
+  import Analytics from "./components/Analytics.svelte";
 
   let selected = 'macchiato'
   const panelColor = 'bg-surface0'
@@ -14,10 +16,11 @@
       <MinecraftList/>
     </div>
     <div class="page-panel {panelColor}">
+      <ModList/>
     </div>
     <div class="page-panel flex flex-col gap-4">
       <div class="w-full h-1/3 overflow-hidden rounded-xl {panelColor}">
-        <MinecraftList/>
+        <Analytics/>
       </div>
       <div class="w-full h-2/3 overflow-hidden rounded-xl {panelColor}">
         <Settings/>
