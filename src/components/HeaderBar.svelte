@@ -4,7 +4,7 @@
         <button class="button hover:bg-overlay2" on:click={minimize}>
             <i class="fa-solid fa-minus"></i>
         </button>
-        <button class="button hover:bg-red" on:click={close}>
+        <button class="button hover:bg-red" on:click={hide}>
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
@@ -22,8 +22,8 @@
         appWindow.minimize()
     }
 
-    function close() {
-        appWindow.minimize()
+    function hide() {
+        appWindow.hide()
     }
 </script>
 

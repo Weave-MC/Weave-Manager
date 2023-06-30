@@ -18,6 +18,7 @@
         "all": false,
         "close": true,
         "hide": true,
+        "minimize": true,
         "show": true,
         "startDragging": true
       }
