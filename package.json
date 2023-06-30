@@ -29,6 +29,9 @@
   "dependencies": {
     "@catppuccin/palette": "^0.1.8",
     "@catppuccin/tailwindcss": "^0.1.6",
-    "@tauri-apps/api": "^1.4.0"
+    "@tauri-apps/api": "^1.4.0",
+    "d3-array": "^3.2.4",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0"
   }
 }
