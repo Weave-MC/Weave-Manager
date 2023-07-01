@@ -56,7 +56,7 @@ fn get_memory_usage() -> String {
   match sysinfo::get_current_pid() {
     Ok(pid) => {
       if let Some(process) = sys.process(pid) {
-        // this is total RSS memory, which will differ from what's shown on Task Manager
+        // this is total RSS memory, which can differ from what's shown on Task Manager
         let used = process.memory();
         let percent = (used as f64 / total as f64) * 100.0;
         let percent_string = format!("{:.2}", percent);
@@ -68,7 +68,7 @@ fn get_memory_usage() -> String {
     }
   }
 
-  "32".into()
+  "NaN".into()
 }
 
 fn main() {
