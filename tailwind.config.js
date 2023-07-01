@@ -28,10 +28,10 @@ export default {
   ],
   plugins: [
       require('@tailwindcss/forms'),
-      require('@catppuccin/tailwindcss')({
-        prefix: false,
-        defaultFlavour: 'mocha'
-      })
+      // require('@catppuccin/tailwindcss')({
+      //   prefix: false,
+      //   defaultFlavour: 'mocha'
+      // })
   ],
 }
 

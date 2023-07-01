@@ -13,7 +13,7 @@
 //   height is 35rem
 </script>
 
-<main id="main" class="{selected} w-screen h-screen overflow-clip text-text">
+<main id="main" data-theme="{selected}" class="w-screen h-screen overflow-clip text-text">
   <HeaderBar bind:value={selected}/>
   <div id="page-content" class="bg-crust relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
     <div id="top-content" class="flex flex-row gap-4">

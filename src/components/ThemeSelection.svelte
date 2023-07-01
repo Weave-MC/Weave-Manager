@@ -1,27 +1,27 @@
 <div id="theme-selection" class="relative w-7 h-7 rounded-lg bg-base overflow-hidden">
     <div id="selections" class="absolute w-48 h-56 pt-7 flex flex-col justify-around">
-        <div id="darcula-theme" class="theme" on:click={() => selectTheme('mocha')}>
+        <div id="darcula-theme" class="theme" on:click={() => selectTheme('darcula')}>
             <h1>Darcula</h1>
         </div>
-        <div id="light-theme" class="theme" on:click={() => selectTheme('macchiato')}>
+        <div id="light-theme" class="theme" on:click={() => selectTheme('light')}>
             <h1>Light</h1>
         </div>
-        <div id="moonlight-theme" class="theme" on:click={() => selectTheme('latte')}>
+        <div id="moonlight-theme" class="theme" on:click={() => selectTheme('moonlight')}>
             <h1>Moonlight</h1>
         </div>
-        <div id="brimstone-theme" class="theme" on:click={() => selectTheme('frappe')}>
+        <div id="brimstone-theme" class="theme" on:click={() => selectTheme('brimstone')}>
             <h1>Brimstone</h1>
         </div>
-        <div id="purple-rain-theme" class="theme" on:click={() => selectTheme('frappe')}>
+        <div id="purple-rain-theme" class="theme" on:click={() => selectTheme('purple-rain')}>
             <h1>Purple Rain</h1>
         </div>
-        <div id="monokai-theme" class="theme" on:click={() => selectTheme('frappe')}>
+        <div id="monokai-theme" class="theme" on:click={() => selectTheme('monokai')}>
             <h1>Monokai</h1>
         </div>
-        <div id="forest" class="theme" on:click={() => selectTheme('frappe')}>
+        <div id="forest" class="theme" on:click={() => selectTheme('forest')}>
             <h1>Forest</h1>
         </div>
-        <div id="oled-dark-theme" class="theme" on:click={() => selectTheme('frappe')}>
+        <div id="oled-dark-theme" class="theme" on:click={() => selectTheme('oled-dark')}>
             <h1>OLED Dark</h1>
         </div>
     </div>
