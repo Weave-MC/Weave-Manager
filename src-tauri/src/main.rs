@@ -7,6 +7,11 @@ use std::thread;
 use std::time::Duration;
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, RefreshKind, System, SystemExt};
 use tauri::{App, Manager, Wry};
+use std::sync::Mutex;
+
+lazy_static::lazy_static! {
+  static ref SYS: Mutex<System> = Mutex::new(System::new_all());
+}
 
 #[derive(Clone, serde::Serialize)]
 struct Minecraft<'a> {
@@ -19,7 +24,7 @@ fn process_scan_loop(app: &App<Wry>) {
   let handle = app.handle();
 
   thread::spawn(move || {
-    let mut sys = System::new();
+    let mut sys = System::new_all();
 
     loop {
       sys.refresh_processes_specifics(ProcessRefreshKind::new());
@@ -42,12 +47,37 @@ fn process_scan_loop(app: &App<Wry>) {
   });
 }
 
+#[tauri::command]
+fn get_memory_usage() -> String {
+  let mut sys = SYS.lock().unwrap();
+  sys.refresh_all();
+  let total = sys.total_memory();
+
+  match sysinfo::get_current_pid() {
+    Ok(pid) => {
+      if let Some(process) = sys.process(pid) {
+        // this is total RSS memory, which will differ from what's shown on Task Manager
+        let used = process.memory();
+        let percent = (used as f64 / total as f64) * 100.0;
+        let percent_string = format!("{:.2}", percent);
+        return percent_string
+      }
+    }
+    Err(e) => {
+      eprintln!("failed to get current pid: {}", e)
+    }
+  }
+
+  "32".into()
+}
+
 fn main() {
   tauri::Builder::default()
     .setup(|app| {
       process_scan_loop(app);
       Ok(())
     })
+    .invoke_handler(tauri::generate_handler![get_memory_usage])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

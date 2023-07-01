@@ -1,6 +1,32 @@
 <script>
-    import LineGraph from "./LineGraph.svelte";
+    import { onMount, onDestroy } from 'svelte';
+    import { invoke } from '@tauri-apps/api/tauri';
     import Statistic from "./Statistic.svelte";
+
+    let memoryUsage = 0;
+
+    async function getMemoryUsage() {
+        try {
+            memoryUsage = await invoke('get_memory_usage');
+        } catch (error) {
+            console.error('Error retrieving memory usage:', error);
+            memoryUsage = 0;
+        }
+    }
+
+    let memoryInterval;
+
+    onMount(() => {
+        getMemoryUsage();
+
+        memoryInterval = setInterval(() => {
+            getMemoryUsage();
+        }, 2000);
+    });
+
+    onDestroy(() => {
+        clearInterval(memoryInterval);
+    });
 </script>
 
 <div id="analytics" class="w-full h-full">
@@ -15,7 +41,7 @@
             <Statistic name="Hours Played" value="10"/>
             <Statistic name="Avg. Launch" value="32.3s"/>
             <Statistic name="Instances" value="1"/>
-            <Statistic name="Mem Usage" value="5%"/>
+            <Statistic name="Mem Usage" value="{memoryUsage}%"/>
         </div>
     </div>
 </div>
