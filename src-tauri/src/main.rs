@@ -3,11 +3,14 @@
 use std::error::Error;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use std::fs;
 use std::thread;
 use std::time::Duration;
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, RefreshKind, System, SystemExt};
 use tauri::{App, Manager, Wry};
 use std::sync::Mutex;
+use serde::{Deserialize, Serialize};
+use serde_json;
 
 lazy_static::lazy_static! {
   static ref SYS: Mutex<System> = Mutex::new(System::new_all());
@@ -60,7 +63,7 @@ fn get_memory_usage() -> String {
         let used = process.memory();
         let percent = (used as f64 / total as f64) * 100.0;
         let percent_string = format!("{:.2}", percent);
-        return percent_string
+        return percent_string;
       }
     }
     Err(e) => {
@@ -68,7 +71,33 @@ fn get_memory_usage() -> String {
     }
   }
 
-  "NaN".into()
+  "N/A".into()
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Analytics {
+  launchTimes: Vec<u32>,
+  averageLaunchTime: String,
+}
+
+#[tauri::command]
+fn get_avg_launch_time() -> String {
+  let home_dir = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+  let file_path = Path::new(&home_dir).join(".weave").join("analytics.json");
+
+  // check if file exists
+  let path_buf = PathBuf::from(&file_path);
+  if !path_buf.exists() {
+    return "N/A".into()
+  }
+
+  if let Ok(file_content) = fs::read_to_string(file_path) {
+    if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
+      return analytics.averageLaunchTime;
+    }
+  }
+
+  "N/A".into()
 }
 
 fn main() {
@@ -77,7 +106,7 @@ fn main() {
       process_scan_loop(app);
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![get_memory_usage])
+    .invoke_handler(tauri::generate_handler![get_memory_usage, get_avg_launch_time])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
