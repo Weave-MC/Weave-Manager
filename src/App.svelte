@@ -4,34 +4,68 @@
   import Settings from "./components/Settings.svelte";
   import ModList from "./components/ModList.svelte";
   import Analytics from "./components/Analytics.svelte";
+  import Console from "./components/ConsoleOutput.svelte";
 
   let selected = 'macchiato'
   const panelColor = 'bg-surface0'
+
+//   width is 50rem
+//   height is 35rem
 </script>
 
 <main id="main" class="{selected} w-screen h-screen overflow-clip text-text">
   <HeaderBar bind:value={selected}/>
-  <div id="page-content" class="bg-crust relative w-screen h-screen flex flex-row justify-center pb-14 gap-4 p-4">
-    <div class="page-panel {panelColor}">
-      <MinecraftList/>
-    </div>
-    <div class="page-panel {panelColor}">
-      <ModList/>
-    </div>
-    <div class="page-panel flex flex-col gap-4">
-      <div class="w-full h-1/3 overflow-hidden rounded-xl {panelColor}">
-        <Analytics/>
+  <div id="page-content" class="bg-crust relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
+    <div id="top-content" class="flex flex-row gap-4">
+      <div class="one-by-two-panel {panelColor}">
+        <MinecraftList/>
       </div>
-      <div class="w-full h-2/3 overflow-hidden rounded-xl {panelColor}">
+      <div class="one-by-two-panel {panelColor}">
+        <ModList/>
+      </div>
+      <div class="one-by-two-panel {panelColor}">
         <Settings/>
+      </div>
+    </div>
+    <div id="bottom-content" class="flex flex-row gap-4">
+      <div class="two-by-one-panel {panelColor}">
+        <Console/>
+      </div>
+      <div class="one-by-one-panel {panelColor}">
+        <Analytics/>
       </div>
     </div>
   </div>
 </main>
 
 <style>
-  .page-panel {
-    @apply w-1/3 h-full overflow-hidden rounded-xl;
+  .one-by-three-panel {
+    @apply overflow-hidden rounded-xl;
+    width: calc(46rem * 0.3333);
+    height: 32rem;
+  }
+  .one-by-two-panel {
+    @apply overflow-hidden rounded-xl;
+    width: calc(46rem * 0.3333);
+    height: calc(32rem * 0.6666);
+  }
+  .one-by-one-panel {
+    @apply overflow-hidden rounded-xl;
+    width: calc(46rem * 0.3333);
+    height: calc(32rem * 0.3333);
+  }
+  .two-by-one-panel {
+    @apply overflow-hidden rounded-xl;
+    width: calc(47.5rem * 0.6666);
+    height: calc(32rem * 0.3333);
+  }
+  .three-by-one-panel {
+    @apply overflow-hidden rounded-xl;
+    width: 50rem;
+    height: calc(32rem * 0.3333);
+  }
+  #page-content>* {
+    flex-flow: row wrap
   }
   :global(*) {
     user-select: none;
