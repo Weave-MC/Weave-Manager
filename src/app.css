@@ -1,3 +1,114 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html[data-theme='darcula'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+    html[data-theme='light'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+    html[data-theme='moonlight'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+    html[data-theme='brimstone'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+    html[data-theme='purple-rain'] {
+        --color-crust: #100710;
+        --color-base: #160A16;
+        --color-surface: #16071C;
+        --color-overlay: #371D25;
+        --color-text: #E67D83;
+        --color-disabled: #EC5F67;
+        --color-enabled: #99C794;
+        --color-accent: #5FB3B3;
+    }
+    html[data-theme='monokai'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+    html[data-theme='forest'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+    html[data-theme='oled-dark'] {
+        --color-crust: #000;
+        --color-base: #000;
+        --color-surface0: #000;
+        --color-surface1: #000;
+        --color-overlay0: #000;
+        --color-overlay1: #000;
+        --color-text: #000;
+        --color-red: #000;
+        --color-green: #000;
+        --color-pink: #000;
+        --color-blue: #000;
+        --color-orange: #000;
+    }
+}
