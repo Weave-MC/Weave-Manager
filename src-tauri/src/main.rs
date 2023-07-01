@@ -53,10 +53,15 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
         .collect()
 }
 
+#[tauri::command]
+fn kill_pid(pid: u32, system: State<Mutex<System>>) -> bool {
+    system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(Mutex::new(System::new()))
-        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances])
+        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
