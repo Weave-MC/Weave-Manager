@@ -5,16 +5,11 @@ export default {
     colors: {
       'crust': 'rgb(var(--color-crust)',
       'base': 'rgb(var(--color-base)',
-      'surface0': 'rgb(var(--color-surface0)',
-      'surface1': 'rgb(var(--color-surface1)',
-      'overlay0': 'rgb(var(--color-overlay0)',
-      'overlay1': 'rgb(var(--color-overlay1)',
+      'surface': 'rgb(var(--color-surface)',
+      'overlay': 'rgb(var(--color-overlay)',
       'text': 'rgb(var(--color-text)',
-      'red': 'rgb(var(--color-red)',
-      'green': 'rgb(var(--color-green)',
-      'pink': 'rgb(var(--color-pink)',
-      'blue': 'rgb(var(--color-blue)',
-      'orange': 'rgb(var(--color-orange)',
+      'disabled': 'rgb(var(--color-disabled)',
+      'enabled': 'rgb(var(--color-enabled)'
     }
   },
   safelist: [
