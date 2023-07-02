@@ -9,7 +9,8 @@ use tauri::State;
 
 #[derive(Serialize)]
 enum ClientType {
-    LunarClient
+    LunarClient,
+    Vanilla
 }
 
 #[derive(Serialize)]
@@ -32,7 +33,7 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
                 return None
             }
 
-            if !proc.cmd().iter().any(|arg| arg.starts_with("net.minecraft")) {
+            if !proc.cmd().iter().any(|arg| arg.contains(".minecraft")) {
                 return None
             }
 
@@ -44,7 +45,7 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
 
             Some(MinecraftInstance {
                 pid: proc.pid().as_u32(),
-                cmd: proc.cmd().to_owned(),
+                cmd: vec!["".to_string()],
                 version: proc.cmd().iter().skip_while(|&arg| arg != "--version").nth(1)?.clone(),
                 start_time: proc.start_time(),
                 client_type: client
