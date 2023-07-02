@@ -1,5 +1,5 @@
 <div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden rounded-lg">
-    <div id="selections" class="absolute w-48 h-56 pt-7 flex flex-col justify-around">
+    <div id="selections" class="absolute w-48 h-60 pt-8 flex flex-col justify-around">
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
         </div>
@@ -22,7 +22,7 @@
             <h1>Cat Frappé</h1>
         </div>
     </div>
-    <div id="title" class="absolute w-48 h-7 pl-3 flex items-center">
+    <div id="title" class="absolute w-48 h-8 pl-3 flex items-center border-b-2 b border-overlay">
         <h1>Theme Selection</h1>
     </div>
     <button id="theme-selector" class="absolute w-7 h-7 right-0 rounded-bl text-xl bg-crust aspect-square text-accent" on:click={toggleThemeSelector}>
@@ -40,7 +40,7 @@
         classList.toggle('w-7')
         classList.toggle('h-7')
         classList.toggle('w-48')
-        classList.toggle('h-56')
+        classList.toggle('h-60')
     }
 
     function selectTheme(theme) {
