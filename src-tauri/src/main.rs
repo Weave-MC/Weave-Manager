@@ -58,10 +58,23 @@ fn kill_pid(pid: u32, system: State<Mutex<System>>) -> bool {
     system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
 }
 
+#[tauri::command]
+fn get_memory_usage(system: State<Mutex<System>>) -> Vec<String> {
+    let mut sys = system.lock().unwrap();
+    sys.refresh_all();
+
+    let total = sys.total_memory();
+
+    let process = sys.process(sysinfo::get_current_pid().unwrap()).unwrap();
+    let used = process.memory();
+
+    vec![used.to_string(), total.to_string()]
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(Mutex::new(System::new()))
-        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid])
+        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

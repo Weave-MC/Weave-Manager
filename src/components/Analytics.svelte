@@ -8,10 +8,11 @@
 
     async function getMemoryUsage() {
         try {
-            memoryUsage = await invoke('get_memory_usage')
+            const [used, total] = await invoke<string[]>('get_memory_usage')
+            memoryUsage = (used / total * 100).toFixed(2)
         } catch (error) {
             console.error('Error retrieving memory usage:', error)
-            memoryUsage = "N/A"
+            memoryUsage = 'N/A'
         }
     }
 
@@ -20,7 +21,7 @@
             averageLaunchTime = await invoke('get_avg_launch_time')
         } catch (error) {
             console.error('Error retrieving average launch time:', error)
-            averageLaunchTime = "N/A"
+            averageLaunchTime = 'N/A'
         }
     }
 
