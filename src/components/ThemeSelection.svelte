@@ -1,4 +1,4 @@
-<div id="theme-selection" class="relative w-7 h-7 rounded-lg bg-base overflow-hidden">
+<div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden">
     <div id="selections" class="absolute w-48 h-56 pt-7 flex flex-col justify-around">
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
@@ -9,26 +9,23 @@
         <div id="moonlight-theme" class="theme" on:click={() => selectTheme('theme-moonlight')}>
             <h1>Moonlight</h1>
         </div>
-        <div id="brimstone-theme" class="theme" on:click={() => selectTheme('theme-brimstone')}>
-            <h1>Brimstone</h1>
-        </div>
         <div id="purple-rain-theme" class="theme" on:click={() => selectTheme('theme-purple-rain')}>
             <h1>Purple Rain</h1>
         </div>
-        <div id="monokai-theme" class="theme" on:click={() => selectTheme('theme-monokai')}>
-            <h1>Monokai</h1>
+        <div id="purple-cat-macchiato" class="theme" on:click={() => selectTheme('theme-cat-macchiato')}>
+            <h1>Cat Macchiato</h1>
         </div>
-        <div id="forest" class="theme" on:click={() => selectTheme('theme-forest')}>
-            <h1>Forest</h1>
+        <div id="purple-cat-mocha" class="theme" on:click={() => selectTheme('theme-cat-mocha')}>
+            <h1>Cat Mocha</h1>
         </div>
-        <div id="oled-dark-theme" class="theme" on:click={() => selectTheme('theme-oled-dark')}>
-            <h1>OLED Dark</h1>
+        <div id="purple-cat-frappe" class="theme" on:click={() => selectTheme('theme-cat-frappe')}>
+            <h1>Cat Frappé</h1>
         </div>
     </div>
     <div id="title" class="absolute w-48 h-7 pl-3 flex items-center">
         <h1>Theme Selection</h1>
     </div>
-    <button id="theme-selector" class="absolute w-7 h-7 right-0 rounded-lg text-xl bg-base aspect-square text-accent" on:click={toggleThemeSelector}>
+    <button id="theme-selector" class="absolute w-7 h-7 right-0 rounded-bl text-xl bg-crust aspect-square text-accent" on:click={toggleThemeSelector}>
         <i class="fa-solid fa-palette"></i>
     </button>
 </div>
@@ -37,7 +34,6 @@
     export let value
 
     function toggleThemeSelector() {
-        console.log("clicked")
         const themeSelection = document.getElementById('theme-selection')
         const classList = themeSelection.classList
 

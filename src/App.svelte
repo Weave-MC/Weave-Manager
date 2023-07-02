@@ -6,16 +6,16 @@
   import Analytics from "./components/Analytics.svelte";
   import Console from "./components/ConsoleOutput.svelte";
 
-  let selected = 'theme-purple-rain'
-  const panelColor = 'bg-base'
+  let selected = 'theme-darcula'
+  const panelColor = 'bg-surface'
 
 //   width is 50rem
 //   height is 35rem
 </script>
 
-<main id="main" class="{selected} w-screen h-screen overflow-clip text-text bg-crust">
+<main id="main" class="{selected} w-screen h-screen overflow-clip text-text">
   <HeaderBar bind:value={selected}/>
-  <div id="page-content" class="bg-crust relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
+  <div id="page-content" class="bg-base relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
     <div id="top-content" class="flex flex-row gap-4">
       <div class="one-by-two-panel {panelColor}">
         <MinecraftList/>
