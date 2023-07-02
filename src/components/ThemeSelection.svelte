@@ -1,4 +1,4 @@
-<div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden">
+<div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden rounded-lg">
     <div id="selections" class="absolute w-48 h-56 pt-7 flex flex-col justify-around">
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
