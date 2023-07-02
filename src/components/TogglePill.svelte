@@ -25,7 +25,7 @@
         display: none;
     }
     input[type="checkbox"] + label {
-        @apply bg-red;
+        @apply bg-disabled;
 
         display: block;
         position: relative;
@@ -55,7 +55,7 @@
         transition: all 0.2s ease-in-out;
     }
     input[type="checkbox"]:checked + label {
-        @apply bg-teal;
+        @apply bg-enabled;
     }
     input[type="checkbox"]:checked + label:before {
         box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);

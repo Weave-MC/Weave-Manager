@@ -3,30 +3,21 @@ export default {
   content: ["./src/**/*.svelte"],
   theme: {
     colors: {
-      'crust': 'rgb(var(--color-crust)',
-      'base': 'rgb(var(--color-base)',
-      'surface': 'rgb(var(--color-surface)',
-      'overlay': 'rgb(var(--color-overlay)',
-      'text': 'rgb(var(--color-text)',
-      'disabled': 'rgb(var(--color-disabled)',
-      'enabled': 'rgb(var(--color-enabled)'
+      'crust': 'var(--color-crust)',
+      'base': 'var(--color-base)',
+      'surface': 'var(--color-surface)',
+      'overlay': 'var(--color-overlay)',
+      'text': 'var(--color-text)',
+      'disabled': 'var(--color-disabled)',
+      'enabled': 'var(--color-enabled)',
+      'accent': 'var(--color-accent)'
+    },
+    extend: {
+
     }
   },
-  safelist: [
-    {
-      pattern: /bg-,+/
-    },
-    'mocha',
-    'macchiato',
-    'frappe',
-    'latte'
-  ],
   plugins: [
-      require('@tailwindcss/forms'),
-      // require('@catppuccin/tailwindcss')({
-      //   prefix: false,
-      //   defaultFlavour: 'mocha'
-      // })
+      require('@tailwindcss/forms')
   ],
 }
 

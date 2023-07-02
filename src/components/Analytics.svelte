@@ -42,7 +42,7 @@
 </script>
 
 <div id="analytics" class="w-full h-full">
-    <div id="analytics-title" class="w-full h-8 flex justify-center items-center border-b-2 border-surface1">
+    <div id="analytics-title" class="w-full h-8 flex justify-center items-center border-b-2 border-overlay">
         <h1 class="absolute">Analytics</h1>
         <div class="w-full flex justify-end px-2">
             <i class="fa-solid fa-chart-simple"></i>

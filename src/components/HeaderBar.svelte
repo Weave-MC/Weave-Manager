@@ -1,10 +1,10 @@
-<div data-tauri-drag-region id="titlebar" class="relative text-xl w-full bg-base h-10 flex items-center pl-3 gap-3">
+<div data-tauri-drag-region id="titlebar" class="relative text-xl w-full bg-surface h-10 flex items-center pl-3 gap-3">
     <div id="header-buttons" class="absolute right-0 h-10 flex justify-end gap-2 p-2">
         <ThemeSelection bind:value={value}/>
-        <button class="button hover:bg-overlay2" on:click={minimize}>
+        <button class="button hover:bg-overlay" on:click={minimize}>
             <i class="fa-solid fa-minus"></i>
         </button>
-        <button class="button hover:bg-red" on:click={hide}>
+        <button class="button hover:bg-disabled" on:click={hide}>
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
