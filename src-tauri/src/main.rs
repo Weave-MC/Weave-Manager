@@ -1,11 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use dirs::home_dir;
 use std::ffi::OsStr;
 use std::sync::Mutex;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::fs;
+use std::env;
 use serde::Serialize;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
@@ -22,6 +22,7 @@ enum ClientType {
 struct MinecraftInstance {
     pid: u32,
     cmd: Vec<String>,
+    cwd: String,
     version: String,
     start_time: u64,
     client_type: ClientType
@@ -53,6 +54,7 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
             Some(MinecraftInstance {
                 pid: proc.pid().as_u32(),
                 cmd: proc.cmd().to_owned(),
+                cwd: proc.cwd().to_string_lossy().to_string(),
                 version: proc.cmd().iter().skip_while(|&arg| arg != "--version").nth(1)?.clone(),
                 start_time: proc.start_time(),
                 client_type: client
@@ -62,37 +64,39 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
 }
 
 #[tauri::command]
-fn relaunch_with_weave(cmd: Vec<String>) -> bool {
+fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>) {
     let weave_loader_location = get_weave_loader_path();
-    let mut updated_cmd = cmd;
-    updated_cmd.push("-javaagent:".to_owned() + &weave_loader_location);
 
-    let result = Command::new(&updated_cmd[0])
-        .args(&updated_cmd[1..])
-        .spawn();
+    let mut updated_cmd = cmd_line;
 
-    match result {
-        Ok(_) => true,
-        Err(err) => {
-            eprintln!("Failed to relaunch with Weave: {}", err);
-            exit(1);
-        }
+    if !weave_loader_location.is_none() {
+        let java_agent = String::from("-javaagent:") + &weave_loader_location.unwrap().as_path().to_str().unwrap();
+        updated_cmd.insert(1, java_agent);
+
+        let _child = Command::new(&updated_cmd[0])
+            .current_dir(Path::new(&cwd))
+            .args(&updated_cmd[1..])
+            .spawn()
+            .expect("Failed to relaunch with Weave");
     }
 }
 
 fn get_weave_loader_path() -> Option<PathBuf> {
-    let home_dir = dirs::home_dir()?;
-    let weave_dir = home_dir.join(".weave");
+    match env::home_dir() {
+        Some(path) => {
+            let weave_dir = path.join(".weave");
 
-    if let Ok(entries) = fs::read_dir(&weave_dir) {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                let file_name = entry.file_name().to_string_lossy();
-                if file_name.starts_with("Weave-Loader") {
-                    return Some(entry.path());
+            if weave_dir.is_dir() {
+                for entry in fs::read_dir(weave_dir).ok()? {
+                    if let Ok(entry) = entry {
+                        if entry.file_name().to_string_lossy().starts_with("Weave-Loader") {
+                            return Some(entry.path())
+                        }
+                    }
                 }
             }
-        }
+        },
+        None => eprintln!("Impossible to get your home dir"),
     }
 
     None
@@ -119,7 +123,7 @@ fn get_memory_usage(system: State<Mutex<System>>) -> Vec<String> {
 fn main() {
     tauri::Builder::default()
         .manage(Mutex::new(System::new()))
-        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage])
+        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage, relaunch_with_weave])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

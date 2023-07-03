@@ -12,6 +12,7 @@
     type Process = {
         pid: number;
         cmd: string[];
+        cwd: string;
         version: string;
         runtime: number;
         client_type: MinecraftType;
@@ -34,7 +35,8 @@
 
                 return {
                     pid: rustProcess.pid,
-                    cmd: rustProcess.cmd.join(' '),
+                    cmd: rustProcess.cmd,
+                    cwd: rustProcess.cwd,
                     version: version,
                     runtime: calculateRuntime(rustProcess.start_time),
                     client_type: clientType
@@ -61,9 +63,21 @@
             formattedRuntime += `${minutes}m`
 
         if (formattedRuntime === '')
-            formattedRuntime = '0m'
+            formattedRuntime = `${runtimeSeconds}s`
 
         return formattedRuntime
+    }
+
+    // Kills the process and relaunches it with weave loader attached
+    async function relaunchWithWeave(process) {
+        try {
+            // kill process
+            await invoke('kill_pid', {pid: process.pid})
+            // relaunch process with weave
+            await invoke('relaunch_with_weave', {cwd: process.cwd, cmdLine: process.cmd})
+        } catch (err) {
+            console.error("Error relaunching process", err)
+        }
     }
 
     async function killProcess(pid) {
@@ -117,7 +131,7 @@
                     <p>{process.version}</p>
                     <p class="absolute right-4">{process.runtime}</p>
                     <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
-                        <button class="process-button">Relaunch</button>
+                        <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
                         <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
                         <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
                     </div>
@@ -125,30 +139,34 @@
             {/each}
         </div>
     </div>
-    <dialog id="info-modal" class="w-[26rem] h-[24rem] px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl text-text" on:click={modalClicked}>
+    <dialog id="info-modal" class="w-[30rem] h-[28rem] px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl text-text" on:click={modalClicked}>
         {#if processInfo != null}
             <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Process Information</div>
             <div class="w-full h-full flex flex-row flex-wrap items-end justify-between pb-3">
                 <div class="info-modal-item">
                     <p class="text-sm font-semibold">Client</p>
-                    <p class="text-sm">{processInfo.client_type}</p>
+                    <p class="text-sm select-text">{processInfo.client_type}</p>
                 </div>
                 <div class="info-modal-item">
                     <p class="text-sm font-semibold">Version</p>
-                    <p class="text-sm">{processInfo.version}</p>
+                    <p class="text-sm select-text">{processInfo.version}</p>
                 </div>
                 <div class="info-modal-item">
                     <p class="text-sm font-semibold">PID</p>
-                    <p class="text-sm">{processInfo.pid}</p>
+                    <p class="text-sm select-text">{processInfo.pid}</p>
                 </div>
                 <div class="info-modal-item">
                     <p class="text-sm font-semibold">Runtime</p>
-                    <p class="text-sm">{processInfo.runtime}</p>
+                    <p class="text-sm select-text">{processInfo.runtime}</p>
+                </div>
+                <div class="w-full text-center">
+                    <p class="text-sm font-semibold">Working Directory</p>
+                    <p class="text-sm select-text">{processInfo.cwd}</p>
                 </div>
                 <div class="w-full h-48 text-sm text-center">
                     <p class="font-semibold mb-1">Command Line</p>
                     <div class="w-full h-44 rounded-xl p-2 bg-base overflow-y-auto break-words select-text">
-                        {processInfo.cmd}
+                        {processInfo.cmd.join(" ")}
                     </div>
                 </div>
             </div>
