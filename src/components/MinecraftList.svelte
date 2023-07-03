@@ -35,10 +35,14 @@
         minecraftList = rustMcList.map((rustProcess) => {
             const clientType = MinecraftType[rustProcess.client_type as keyof typeof MinecraftType]
 
+            let version = rustProcess.version.trim()
+            if (version.includes('-'))
+                version = version.substring(0, version.indexOf('-'))
+
             return {
                 pid: rustProcess.pid,
                 cmd: rustProcess.cmd,
-                version: rustProcess.version,
+                version: version,
                 runtime: calculateRuntime(rustProcess.start_time),
                 client_type: clientType
             }
@@ -90,12 +94,12 @@
     </div>
     <div id="content" class="w-full h-full pb-8">
         <div id="list" class="w-full h-full flex flex-col">
-            {#each minecraftList as process (process.id)}
-                <div class="process-item {process.client_type}" on:mouseenter={() => handleMouseEnter(process.pid)} on:mouseleave={() => handleMouseLeave(process.pid)}>
-                    <p>{process.client_type}</p>
+            {#each minecraftList as process}
+                <div class="relative process-item {process.client_type}" on:mouseenter={() => handleMouseEnter(process.pid)} on:mouseleave={() => handleMouseLeave(process.pid)}>
+                    <p class="absolute left-4">{process.client_type}</p>
                     <p>{process.version}</p>
-                    <p>{process.runtime}</p>
-                        <div id="process-buttons" class="w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
+                    <p class="absolute right-4">{process.runtime}</p>
+                        <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
                             <button class="process-button">Relaunch</button>
                             <button class="process-button">Kill</button>
                             <button class="process-button">Info</button>
@@ -108,7 +112,7 @@
 
 <style>
     .process-item {
-        @apply relative w-full h-1/6 border-b-2 border-overlay flex flex-row items-center justify-between px-4;
+        @apply relative w-full h-1/6 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
     }
     .lunarclient {
 
@@ -119,11 +123,11 @@
     .forge {
 
     }
-    .process-item:hover #process-buttons {
+    .process-item:hover .process-buttons {
         opacity: 1;
     }
-    #process-buttons {
-        transition: opacity 0.2s;
+    .process-buttons {
+        transition: opacity 0.1s;
     }
     .process-button {
         @apply w-[30%] h-full bg-surface rounded-xl flex items-center justify-center text-sm font-semibold;
