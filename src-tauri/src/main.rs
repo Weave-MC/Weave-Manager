@@ -10,6 +10,7 @@ use tauri::State;
 #[derive(Serialize)]
 enum ClientType {
     LunarClient,
+    Forge,
     Vanilla
 }
 
@@ -39,8 +40,10 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
 
             let client = if proc.cmd().iter().any(|arg| arg.contains("lunar")) {
                 ClientType::LunarClient
+            } else if proc.cmd().iter().any(|arg| arg.contains("minecraftforge")) {
+                ClientType::Forge
             } else {
-                return None
+                ClientType::Vanilla
             };
 
             Some(MinecraftInstance {
