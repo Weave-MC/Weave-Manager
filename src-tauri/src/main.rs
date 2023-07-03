@@ -48,7 +48,7 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
 
             Some(MinecraftInstance {
                 pid: proc.pid().as_u32(),
-                cmd: vec!["".to_string()],
+                cmd: proc.cmd().to_owned(),
                 version: proc.cmd().iter().skip_while(|&arg| arg != "--version").nth(1)?.clone(),
                 start_time: proc.start_time(),
                 client_type: client
