@@ -2,16 +2,6 @@
     import {onDestroy, onMount} from "svelte";
     import {invoke} from "@tauri-apps/api/tauri";
 
-    let hoverStates = {}
-
-    function handleMouseEnter(pid) {
-        hoverStates[pid] = true
-    }
-
-    function handleMouseLeave(pid) {
-        hoverStates[pid] = false
-    }
-
     enum MinecraftType {
         LunarClient = "Lunar",
         Forge = "Forge",
@@ -21,32 +11,38 @@
 
     type Process = {
         pid: number;
-        cmd: string;
+        cmd: string[];
         version: string;
         runtime: number;
         client_type: MinecraftType;
     }
 
+    let processInfo: Process = null
+    let infoModal: HTMLDialogElement
     let minecraftList: Process[] = []
 
     async function getMinecraftProcesses() {
-        const rustMcList = await invoke('fetch_minecraft_instances')
+        try {
+            const rustMcList = await invoke('fetch_minecraft_instances')
 
-        minecraftList = rustMcList.map((rustProcess) => {
-            const clientType = MinecraftType[rustProcess.client_type as keyof typeof MinecraftType]
+            minecraftList = rustMcList.map((rustProcess) => {
+                const clientType = MinecraftType[rustProcess.client_type as keyof typeof MinecraftType]
 
-            let version = rustProcess.version.trim()
-            if (version.includes('-'))
-                version = version.substring(0, version.indexOf('-'))
+                let version = rustProcess.version.trim()
+                if (version.includes('-'))
+                    version = version.substring(0, version.indexOf('-'))
 
-            return {
-                pid: rustProcess.pid,
-                cmd: rustProcess.cmd,
-                version: version,
-                runtime: calculateRuntime(rustProcess.start_time),
-                client_type: clientType
-            }
-        })
+                return {
+                    pid: rustProcess.pid,
+                    cmd: rustProcess.cmd.join(' '),
+                    version: version,
+                    runtime: calculateRuntime(rustProcess.start_time),
+                    client_type: clientType
+                }
+            })
+        } catch (err) {
+            console.error("Error retrieving process list", err)
+        }
     }
 
     function calculateRuntime(startTime: number): string {
@@ -70,10 +66,31 @@
         return formattedRuntime
     }
 
+    async function killProcess(pid) {
+        try {
+            await invoke('kill_pid', {pid: pid})
+        } catch (err) {
+            console.error("Error killing process", err)
+        }
+    }
+
+    function showInfoModal(process) {
+        processInfo = process
+        infoModal.showModal()
+    }
+
+    function modalClicked(event) {
+        const rect = infoModal.getBoundingClientRect()
+        const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
+        if (!isInDialog)
+            infoModal.close()
+    }
+
     let processInterval
 
     onMount(() => {
         getMinecraftProcesses()
+        infoModal = document.getElementById('info-modal') as HTMLDialogElement
 
         processInterval = setInterval(() => {
             getMinecraftProcesses()
@@ -85,34 +102,87 @@
     });
 </script>
 
-<div id="minecraft-list" class="w-full h-full">
-    <div id="minecraft-list-title" class="w-full h-8 flex justify-center items-center border-b-2 border-overlay">
+<div id="minecraft-list" class="w-full h-full bg-surface">
+    <div id="minecraft-list-title" class="w-full h-8 bg-surface flex justify-center items-center border-b-2 border-overlay">
         <h1 class="absolute">Minecraft Processes</h1>
         <div class="w-full flex justify-end px-2">
             <i class="fa-solid fa-display"></i>
         </div>
     </div>
-    <div id="content" class="w-full h-full pb-8">
-        <div id="list" class="w-full h-full flex flex-col">
+    <div id="content" class="w-full h-full pb-8 overflow-y-auto">
+        <div id="list" class="w-full flex flex-col">
             {#each minecraftList as process}
-                <div class="relative process-item {process.client_type}" on:mouseenter={() => handleMouseEnter(process.pid)} on:mouseleave={() => handleMouseLeave(process.pid)}>
+                <div class="relative process-item {process.client_type}">
                     <p class="absolute left-4">{process.client_type}</p>
                     <p>{process.version}</p>
                     <p class="absolute right-4">{process.runtime}</p>
-                        <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
-                            <button class="process-button">Relaunch</button>
-                            <button class="process-button">Kill</button>
-                            <button class="process-button">Info</button>
-                        </div>
+                    <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
+                        <button class="process-button">Relaunch</button>
+                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+                        <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
+                    </div>
                 </div>
             {/each}
         </div>
     </div>
+    <dialog id="info-modal" class="w-[26rem] h-[24rem] px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl text-text" on:click={modalClicked}>
+        {#if processInfo != null}
+            <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Process Information</div>
+            <div class="w-full h-full flex flex-row flex-wrap items-end justify-between pb-3">
+                <div class="info-modal-item">
+                    <p class="text-sm font-semibold">Client</p>
+                    <p class="text-sm">{processInfo.client_type}</p>
+                </div>
+                <div class="info-modal-item">
+                    <p class="text-sm font-semibold">Version</p>
+                    <p class="text-sm">{processInfo.version}</p>
+                </div>
+                <div class="info-modal-item">
+                    <p class="text-sm font-semibold">PID</p>
+                    <p class="text-sm">{processInfo.pid}</p>
+                </div>
+                <div class="info-modal-item">
+                    <p class="text-sm font-semibold">Runtime</p>
+                    <p class="text-sm">{processInfo.runtime}</p>
+                </div>
+                <div class="w-full h-48 text-sm text-center">
+                    <p class="font-semibold mb-1">Command Line</p>
+                    <div class="w-full h-44 rounded-xl p-2 bg-base overflow-y-auto break-words select-text">
+                        {processInfo.cmd}
+                    </div>
+                </div>
+            </div>
+
+        {/if}
+    </dialog>
 </div>
 
 <style>
+    button {
+        outline: none;
+    }
+    #info-modal::backdrop {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+    #info-modal:focus {
+        outline: none;
+    }
+    #info-modal {
+        z-index: 1;
+        scale: 0;
+        opacity: 0;
+        box-shadow: 0 0 3rem 1px rgba(0, 0, 0, 0.4);
+        transition: all 350ms ease-in-out;
+    }
+    #info-modal[open] {
+        scale: 1;
+        opacity: 1;
+    }
+    .info-modal-item {
+        @apply w-1/2 text-center;
+    }
     .process-item {
-        @apply relative w-full h-1/6 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
+        @apply relative bg-surface w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
     }
     .lunarclient {
 
@@ -131,5 +201,14 @@
     }
     .process-button {
         @apply w-[30%] h-full bg-surface rounded-xl flex items-center justify-center text-sm font-semibold;
+    }
+    ::-webkit-scrollbar {
+        @apply w-1;
+    }
+    ::-webkit-scrollbar-track {
+        @apply bg-none;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-overlay rounded-xl;
     }
 </style>
