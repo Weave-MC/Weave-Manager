@@ -1,7 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use dirs::home_dir;
 use std::ffi::OsStr;
 use std::sync::Mutex;
+use std::path::PathBuf;
+use std::process::{Command, Stdio};
+use std::fs;
 use serde::Serialize;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
@@ -55,6 +59,43 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
             })
         })
         .collect()
+}
+
+#[tauri::command]
+fn relaunch_with_weave(cmd: Vec<String>) -> bool {
+    let weave_loader_location = get_weave_loader_path();
+    let mut updated_cmd = cmd;
+    updated_cmd.push("-javaagent:".to_owned() + &weave_loader_location);
+
+    let result = Command::new(&updated_cmd[0])
+        .args(&updated_cmd[1..])
+        .spawn();
+
+    match result {
+        Ok(_) => true,
+        Err(err) => {
+            eprintln!("Failed to relaunch with Weave: {}", err);
+            exit(1);
+        }
+    }
+}
+
+fn get_weave_loader_path() -> Option<PathBuf> {
+    let home_dir = dirs::home_dir()?;
+    let weave_dir = home_dir.join(".weave");
+
+    if let Ok(entries) = fs::read_dir(&weave_dir) {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                let file_name = entry.file_name().to_string_lossy();
+                if file_name.starts_with("Weave-Loader") {
+                    return Some(entry.path());
+                }
+            }
+        }
+    }
+
+    None
 }
 
 #[tauri::command]
