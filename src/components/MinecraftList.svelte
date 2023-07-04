@@ -221,7 +221,7 @@
                 </div>
             {/if}
             <div class="w-full h-1/3 flex flex-col justify-around items-center">
-                <button class="w-44 h-8 rounded-xl bg-enabled flex justify-center items-center" on:click={async() => await relaunchWithWeave(relaunchInfo)}>
+                <button class="w-44 h-8 rounded-xl border-2 border-enabled bg-overlay flex justify-center items-center" on:click={async() => await relaunchWithWeave(relaunchInfo)}>
                     Relaunch with Weave
                 </button>
                 <button class="w-24 h-8 rounded-xl bg-overlay flex justify-center items-center" on:click={() => relaunchModal.close()}>
