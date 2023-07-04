@@ -1,6 +1,7 @@
 <script lang="ts">
-    import {onDestroy, onMount} from "svelte";
-    import {invoke} from "@tauri-apps/api/tauri";
+    import {onDestroy, onMount} from "svelte"
+    import {invoke} from "@tauri-apps/api/tauri"
+    import { appWindow } from "@tauri-apps/api/window"
 
     enum MinecraftType {
         LunarClient = "Lunar",
@@ -19,21 +20,24 @@
     }
 
     let processInfo: Process = null
+    let relaunchInfo: Process = null
     let infoModal: HTMLDialogElement
-    let minecraftList: Process[] = []
+    let relaunchModal: HTMLDialogElement
+    let minecraftMap = new Map()
 
     async function getMinecraftProcesses() {
         try {
             const rustMcList = await invoke('fetch_minecraft_instances')
 
-            minecraftList = rustMcList.map((rustProcess) => {
+            const newMcMap = new Map()
+            for (const rustProcess of rustMcList) {
                 const clientType = MinecraftType[rustProcess.client_type as keyof typeof MinecraftType]
 
                 let version = rustProcess.version.trim()
                 if (version.includes('-'))
                     version = version.substring(0, version.indexOf('-'))
 
-                return {
+                const minecraft = {
                     pid: rustProcess.pid,
                     cmd: rustProcess.cmd,
                     cwd: rustProcess.cwd,
@@ -41,7 +45,17 @@
                     runtime: calculateRuntime(rustProcess.start_time),
                     client_type: clientType
                 }
-            })
+
+                if (!minecraftMap.has(rustProcess.pid)) {
+                    await appWindow.setFocus()
+                    relaunchInfo = minecraft as Process
+                    relaunchModal.showModal()
+                }
+
+                newMcMap.set(rustProcess.pid, minecraft)
+            }
+
+            minecraftMap = newMcMap
         } catch (err) {
             console.error("Error retrieving process list", err)
         }
@@ -70,6 +84,9 @@
 
     // Kills the process and relaunches it with weave loader attached
     async function relaunchWithWeave(process) {
+        if (relaunchModal.open)
+            relaunchModal.close()
+
         try {
             // kill process
             await invoke('kill_pid', {pid: process.pid})
@@ -94,17 +111,21 @@
     }
 
     function modalClicked(event) {
-        const rect = infoModal.getBoundingClientRect()
+        const target = event.target as HTMLDialogElement
+
+        const rect = target.getBoundingClientRect()
         const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
         if (!isInDialog)
-            infoModal.close()
+            target.close()
     }
 
     let processInterval
 
     onMount(() => {
         getMinecraftProcesses()
+
         infoModal = document.getElementById('info-modal') as HTMLDialogElement
+        relaunchModal = document.getElementById('relaunch-modal') as HTMLDialogElement
 
         processInterval = setInterval(() => {
             getMinecraftProcesses()
@@ -125,7 +146,7 @@
     </div>
     <div id="content" class="w-full h-full pb-8 overflow-y-auto">
         <div id="list" class="w-full flex flex-col">
-            {#each minecraftList as process}
+            {#each [...minecraftMap.values()] as process}
                 <div class="relative process-item {process.client_type}">
                     <p class="absolute left-4">{process.client_type}</p>
                     <p>{process.version}</p>
@@ -139,23 +160,23 @@
             {/each}
         </div>
     </div>
-    <dialog id="info-modal" class="w-[30rem] h-[28rem] px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl text-text" on:click={modalClicked}>
+    <dialog id="info-modal" class="modal w-[30rem] h-[28rem]" on:click={modalClicked}>
         {#if processInfo != null}
             <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Process Information</div>
             <div class="w-full h-full flex flex-row flex-wrap items-end justify-between pb-3">
-                <div class="info-modal-item">
+                <div class="modal-process-info-item">
                     <p class="text-sm font-semibold">Client</p>
                     <p class="text-sm select-text">{processInfo.client_type}</p>
                 </div>
-                <div class="info-modal-item">
+                <div class="modal-process-info-item">
                     <p class="text-sm font-semibold">Version</p>
                     <p class="text-sm select-text">{processInfo.version}</p>
                 </div>
-                <div class="info-modal-item">
+                <div class="modal-process-info-item">
                     <p class="text-sm font-semibold">PID</p>
                     <p class="text-sm select-text">{processInfo.pid}</p>
                 </div>
-                <div class="info-modal-item">
+                <div class="modal-process-info-item">
                     <p class="text-sm font-semibold">Runtime</p>
                     <p class="text-sm select-text">{processInfo.runtime}</p>
                 </div>
@@ -173,30 +194,64 @@
 
         {/if}
     </dialog>
+    <dialog id="relaunch-modal" class="modal w-[25rem] h-[20rem]" on:click={modalClicked}>
+        <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Detected Minecraft Instance</div>
+        <div class="w-full h-full flex flex-col items-center justify-between pb-3">
+            {#if relaunchInfo}
+                <div class="w-full h-2/3 flex flex-row flex-wrap justify-between items-center">
+                    <div class="modal-process-info-item">
+                        <p class="text-sm font-semibold">Client</p>
+                        <p class="text-sm select-text">{relaunchInfo.client_type}</p>
+                    </div>
+                    <div class="modal-process-info-item">
+                        <p class="text-sm font-semibold">Version</p>
+                        <p class="text-sm select-text">{relaunchInfo.version}</p>
+                    </div>
+                    <div class="modal-process-info-item">
+                        <p class="text-sm font-semibold">PID</p>
+                        <p class="text-sm select-text">{relaunchInfo.pid}</p>
+                    </div>
+                    <div class="modal-process-info-item">
+                        <p class="text-sm font-semibold">Runtime</p>
+                        <p class="text-sm select-text">{relaunchInfo.runtime}</p>
+                    </div>
+                </div>
+            {/if}
+            <div class="w-full h-1/3 flex flex-col justify-around items-center">
+                <button class="w-44 h-8 rounded-xl bg-enabled flex justify-center items-center" on:click={async() => await relaunchWithWeave(relaunchInfo)}>
+                    Relaunch with Weave
+                </button>
+                <button class="w-24 h-8 rounded-xl bg-overlay flex justify-center items-center" on:click={() => relaunchModal.close()}>
+                    No Thanks
+                </button>
+            </div>
+        </div>
+    </dialog>
 </div>
 
 <style>
     button {
         outline: none;
     }
-    #info-modal::backdrop {
-        background-color: rgba(0, 0, 0, 0.2);
-    }
-    #info-modal:focus {
-        outline: none;
-    }
-    #info-modal {
+    .modal {
+        @apply px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl text-text;
         z-index: 1;
         scale: 0;
         opacity: 0;
         box-shadow: 0 0 3rem 1px rgba(0, 0, 0, 0.4);
         transition: all 350ms ease-in-out;
     }
-    #info-modal[open] {
+    .modal::backdrop {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+    .modal:focus {
+        outline: none;
+    }
+    .modal[open] {
         scale: 1;
         opacity: 1;
     }
-    .info-modal-item {
+    .modal-process-info-item {
         @apply w-1/2 text-center;
     }
     .process-item {
