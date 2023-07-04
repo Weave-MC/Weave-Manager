@@ -22,6 +22,10 @@
         "show": true,
         "setFocus": true,
         "startDragging": true
+      },
+      "shell": {
+        "all": false,
+        "open": true
       }
     },
     "bundle": {
