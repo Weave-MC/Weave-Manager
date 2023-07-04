@@ -6,7 +6,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::fs;
 use std::env;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
+use serde_json;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
 use tauri::State;
@@ -120,11 +121,42 @@ fn get_memory_usage(system: State<Mutex<System>>) -> Vec<String> {
     vec![used.to_string(), total.to_string()]
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct Analytics {
+    launchTimes: Vec<u32>,
+    averageLaunchTime: String,
+}
+
+#[tauri::command]
+fn get_avg_launch_time() -> String {
+    match env::home_dir() {
+        Some(path) => {
+            let weave_dir = path.join(".weave");
+
+            if weave_dir.is_dir() {
+                let analytics_file = weave_dir.join("analytics.json");
+                if !analytics_file.exists() {
+                    return "N/A".into()
+                }
+
+                if let Ok(file_content) = fs::read_to_string(analytics_file) {
+                    if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
+                        return analytics.averageLaunchTime;
+                    }
+                }
+            }
+        },
+        None => eprintln!("Impossible to get your home dir"),
+    }
+
+    "N/A".into()
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs_watch::init())
         .manage(Mutex::new(System::new()))
-        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage, relaunch_with_weave])
+        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage, get_avg_launch_time, relaunch_with_weave])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
