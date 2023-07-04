@@ -14,7 +14,7 @@
 
 <div class="toggle-pill flex flex-row items-center">
     <div class="checkbox-container mr-2">
-        <input type="checkbox" id="{id}" name="check" on:click={onToggle}>
+        <input type="checkbox" id="{id}" name="check" checked="checked" on:click={onToggle}>
         <label for="{id}"></label>
     </div>
     <label class="cursor-pointer" for={id}>{name}</label>
