@@ -44,7 +44,7 @@
                     cmd: rustProcess.cmd,
                     cwd: rustProcess.cwd,
                     version: version,
-                    runtime: calculateRuntime(rustProcess.start_time),
+                    start_time: rustProcess.start_time,
                     client_type: clientType
                 }
 
@@ -113,21 +113,12 @@
         infoModal.showModal()
     }
 
-    function modalClicked(event) {
-        const target = event.target as HTMLDialogElement
-
-        const rect = target.getBoundingClientRect()
-        const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
-        if (!isInDialog)
-            target.close()
-    }
-
     let processInterval
 
     onMount(() => {
         getMinecraftProcesses()
 
-        infoModal = document.getElementById('info-modal') as HTMLDialogElement
+        infoModal = document.getElementById('process-info-modal') as HTMLDialogElement
         relaunchModal = document.getElementById('relaunch-modal') as HTMLDialogElement
 
         processInterval = setInterval(() => {
@@ -153,35 +144,35 @@
                 <div class="relative process-item {process.client_type}">
                     <p class="absolute left-4">{process.client_type}</p>
                     <p>{process.version}</p>
-                    <p class="absolute right-4">{process.runtime}</p>
+                    <p class="absolute right-4">{calculateRuntime(process.start_time)}</p>
                     <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
-                        <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
-                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
                         <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
+                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+                        <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
                     </div>
                 </div>
             {/each}
         </div>
     </div>
-    <dialog id="info-modal" class="modal w-[30rem] h-[28rem]" on:click={modalClicked}>
-        {#if processInfo != null}
+    <dialog id="process-info-modal" class="modal w-[30rem] h-[28rem]" on:click={modalClicked}>
+        {#if processInfo}
             <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Process Information</div>
             <div class="w-full h-full flex flex-row flex-wrap items-end justify-between pb-3">
                 <div class="modal-process-info-item">
-                    <p class="text-sm font-semibold">Client</p>
-                    <p class="text-sm select-text">{processInfo.client_type}</p>
+                    <p class="font-semibold">Client</p>
+                    <p class="select-text">{processInfo.client_type}</p>
                 </div>
                 <div class="modal-process-info-item">
-                    <p class="text-sm font-semibold">Version</p>
-                    <p class="text-sm select-text">{processInfo.version}</p>
+                    <p class="font-semibold">Version</p>
+                    <p class="select-text">{processInfo.version}</p>
                 </div>
                 <div class="modal-process-info-item">
-                    <p class="text-sm font-semibold">PID</p>
-                    <p class="text-sm select-text">{processInfo.pid}</p>
+                    <p class="font-semibold">PID</p>
+                    <p class="select-text">{processInfo.pid}</p>
                 </div>
                 <div class="modal-process-info-item">
-                    <p class="text-sm font-semibold">Runtime</p>
-                    <p class="text-sm select-text">{processInfo.runtime}</p>
+                    <p class="font-semibold">Runtime</p>
+                    <p class="select-text">{calculateRuntime(processInfo.start_time)}</p>
                 </div>
                 <div class="w-full text-center">
                     <p class="text-sm font-semibold">Working Directory</p>
@@ -216,7 +207,7 @@
                     </div>
                     <div class="modal-process-info-item">
                         <p class="text-sm font-semibold">Runtime</p>
-                        <p class="text-sm select-text">{relaunchInfo.runtime}</p>
+                        <p class="text-sm select-text">{calculateRuntime(relaunchInfo.start_time)}</p>
                     </div>
                 </div>
             {/if}
@@ -255,7 +246,7 @@
         opacity: 1;
     }
     .modal-process-info-item {
-        @apply w-1/2 text-center;
+        @apply w-1/2 text-center text-sm;
     }
     .process-item {
         @apply relative bg-surface w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;

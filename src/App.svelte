@@ -10,6 +10,17 @@
   let mcInstances: number
   const panelColor = 'bg-surface'
 
+  // unresolved reference because lang is set to ts...
+  // im not good with ts so not sure how to fix this but for now it's just a visual issue
+  window.modalClicked = event => {
+    const target = event.target as HTMLDialogElement
+
+    const rect = target.getBoundingClientRect()
+    const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
+    if (!isInDialog)
+      target.close()
+  }
+
 //   width is 50rem
 //   height is 35rem
 </script>
