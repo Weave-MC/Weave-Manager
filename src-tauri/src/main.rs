@@ -26,7 +26,8 @@ struct MinecraftInstance {
     cwd: String,
     version: String,
     start_time: u64,
-    client_type: ClientType
+    client_type: ClientType,
+    weave_attached: bool
 }
 
 #[tauri::command]
@@ -44,12 +45,18 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
                 return None
             }
 
-            let client = if proc.cmd().iter().any(|arg| arg.contains("lunar")) {
+            let client_type = if proc.cmd().iter().any(|arg| arg.contains("lunar")) {
                 ClientType::LunarClient
             } else if proc.cmd().iter().any(|arg| arg.contains("minecraftforge")) {
                 ClientType::Forge
             } else {
                 ClientType::Vanilla
+            };
+
+            let weave_attached = if proc.cmd().iter().any(|arg| arg.contains("Weave-Loader")) {
+                true
+            } else {
+                false
             };
 
             Some(MinecraftInstance {
@@ -58,7 +65,8 @@ fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInsta
                 cwd: proc.cwd().to_string_lossy().to_string(),
                 version: proc.cmd().iter().skip_while(|&arg| arg != "--version").nth(1)?.clone(),
                 start_time: proc.start_time(),
-                client_type: client
+                client_type,
+                weave_attached
             })
         })
         .collect()

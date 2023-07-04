@@ -17,6 +17,7 @@
         version: string;
         runtime: number;
         client_type: MinecraftType;
+        weave_attached: boolean;
     }
 
     export let instances = 0
@@ -45,10 +46,11 @@
                     cwd: rustProcess.cwd,
                     version: version,
                     start_time: rustProcess.start_time,
-                    client_type: clientType
+                    client_type: clientType,
+                    weave_attached: rustProcess.weave_attached
                 }
 
-                if (!minecraftMap.has(rustProcess.pid)) {
+                if (!minecraftMap.has(rustProcess.pid) && !rustProcess.weave_attached) {
                     await appWindow.setFocus()
                     relaunchInfo = minecraft as Process
                     relaunchModal.showModal()
@@ -157,28 +159,36 @@
     <dialog id="process-info-modal" class="modal w-[30rem] h-[28rem]" on:click={modalClicked}>
         {#if processInfo}
             <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Process Information</div>
-            <div class="w-full h-full flex flex-row flex-wrap items-end justify-between pb-3">
-                <div class="modal-process-info-item">
+            <div class="w-full h-full flex flex-row flex-wrap items-end justify-center pb-3">
+                <div class="w-1/3 info-item">
                     <p class="font-semibold">Client</p>
                     <p class="select-text">{processInfo.client_type}</p>
                 </div>
-                <div class="modal-process-info-item">
+                <div class="w-1/3 info-item">
+                    <p class="font-semibold">Status</p>
+                    {#if processInfo.weave_attached}
+                        <p>Weave attached</p>
+                    {:else}
+                        <p>Weave not attached</p>
+                    {/if}
+                </div>
+                <div class="w-1/3 info-item">
                     <p class="font-semibold">Version</p>
                     <p class="select-text">{processInfo.version}</p>
                 </div>
-                <div class="modal-process-info-item">
+                <div class="w-32 info-item">
                     <p class="font-semibold">PID</p>
                     <p class="select-text">{processInfo.pid}</p>
                 </div>
-                <div class="modal-process-info-item">
+                <div class=" w-32 info-item">
                     <p class="font-semibold">Runtime</p>
                     <p class="select-text">{calculateRuntime(processInfo.start_time)}</p>
                 </div>
-                <div class="w-full text-center">
-                    <p class="text-sm font-semibold">Working Directory</p>
-                    <p class="text-sm select-text">{processInfo.cwd}</p>
+                <div class="w-full info-item">
+                    <p class="font-semibold">Working Directory</p>
+                    <p class="select-text">{processInfo.cwd}</p>
                 </div>
-                <div class="w-full h-48 text-sm text-center">
+                <div class="w-full h-48 info-item">
                     <p class="font-semibold mb-1">Command Line</p>
                     <div class="w-full h-44 rounded-xl p-2 bg-base overflow-y-auto break-words select-text">
                         {processInfo.cmd.join(" ")}
@@ -193,19 +203,19 @@
         <div class="w-full h-full flex flex-col items-center justify-between pb-3">
             {#if relaunchInfo}
                 <div class="w-full h-2/3 flex flex-row flex-wrap justify-between items-center">
-                    <div class="modal-process-info-item">
+                    <div class="w-1/2 info-item">
                         <p class="text-sm font-semibold">Client</p>
                         <p class="text-sm select-text">{relaunchInfo.client_type}</p>
                     </div>
-                    <div class="modal-process-info-item">
+                    <div class="w-1/2 info-item">
                         <p class="text-sm font-semibold">Version</p>
                         <p class="text-sm select-text">{relaunchInfo.version}</p>
                     </div>
-                    <div class="modal-process-info-item">
+                    <div class="w-1/2 info-item">
                         <p class="text-sm font-semibold">PID</p>
                         <p class="text-sm select-text">{relaunchInfo.pid}</p>
                     </div>
-                    <div class="modal-process-info-item">
+                    <div class="w-1/2 info-item">
                         <p class="text-sm font-semibold">Runtime</p>
                         <p class="text-sm select-text">{calculateRuntime(relaunchInfo.start_time)}</p>
                     </div>
@@ -245,8 +255,8 @@
         scale: 1;
         opacity: 1;
     }
-    .modal-process-info-item {
-        @apply w-1/2 text-center text-sm;
+    .info-item {
+        @apply text-center text-sm;
     }
     .process-item {
         @apply relative bg-surface w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
