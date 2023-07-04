@@ -65,7 +65,7 @@
         </div>
     </div>
     <div id="content" class="w-full h-full pb-8 overflow-y-auto">
-        <div id="list" class="w-full flex flex-col bg-crust">
+        <div id="list" class="w-full flex flex-col">
             {#each modList as mod (mod.path)}
                 <div class="relative mod-item">
                     <p class="absolute left-4">{mod.name}</p>
