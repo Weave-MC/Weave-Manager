@@ -122,6 +122,7 @@ fn get_memory_usage(system: State<Mutex<System>>) -> Vec<String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs_watch::init())
         .manage(Mutex::new(System::new()))
         .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage, relaunch_with_weave])
         .run(tauri::generate_context!())
