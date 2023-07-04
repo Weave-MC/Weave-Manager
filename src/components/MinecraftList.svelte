@@ -19,6 +19,8 @@
         client_type: MinecraftType;
     }
 
+    export let instances = 0
+
     let processInfo: Process = null
     let relaunchInfo: Process = null
     let infoModal: HTMLDialogElement
@@ -56,6 +58,7 @@
             }
 
             minecraftMap = newMcMap
+            instances = minecraftMap.size
         } catch (err) {
             console.error("Error retrieving process list", err)
         }

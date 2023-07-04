@@ -3,6 +3,7 @@
     import { invoke } from '@tauri-apps/api/tauri'
     import Statistic from "./Statistic.svelte"
 
+    export let instances: number
     let memoryUsage: string
     let averageLaunchTime: string
 
@@ -53,7 +54,7 @@
         <div id="statistics" class="w-full h-full flex flex-row flex-wrap items-center justify-center">
             <Statistic name="Hours Played" value="10"/>
             <Statistic name="Avg. Launch" value="{averageLaunchTime}"/>
-            <Statistic name="Instances" value="1"/>
+            <Statistic name="Instances" value="{instances}"/>
             <Statistic name="Mem Usage" value="{memoryUsage}%"/>
         </div>
     </div>

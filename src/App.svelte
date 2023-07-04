@@ -7,6 +7,7 @@
   import Console from "./components/ConsoleOutput.svelte";
 
   let selected = 'theme-darcula'
+  let mcInstances: number
   const panelColor = 'bg-surface'
 
 //   width is 50rem
@@ -18,7 +19,7 @@
   <div id="page-content" class="bg-base relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
     <div id="top-content" class="flex flex-row gap-4">
       <div class="one-by-two-panel {panelColor}">
-        <MinecraftList/>
+        <MinecraftList bind:instances="{mcInstances}"/>
       </div>
       <div class="one-by-two-panel {panelColor}">
         <ModList/>
@@ -32,7 +33,7 @@
         <Console/>
       </div>
       <div class="one-by-one-panel {panelColor}">
-        <Analytics/>
+        <Analytics instances="{mcInstances}"/>
       </div>
     </div>
   </div>
