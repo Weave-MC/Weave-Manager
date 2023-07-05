@@ -26,6 +26,10 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "fs": {
+        "readDir": true,
+        "scope": ["$HOME/.weave/*"]
       }
     },
     "bundle": {

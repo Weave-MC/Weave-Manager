@@ -1,7 +1,10 @@
 <script lang="ts">
-    import { watch, watchImmediate } from "tauri-plugin-fs-watch-api"
-    import { onMount } from "svelte"
-    import { open } from "@tauri-apps/api/shell"
+    import {watchImmediate} from "tauri-plugin-fs-watch-api"
+    import {onMount} from "svelte"
+    import {open} from "@tauri-apps/api/shell"
+    import {BaseDirectory, readDir} from "@tauri-apps/api/fs";
+    import {homeDir} from "@tauri-apps/api/path";
+    import {invoke} from "@tauri-apps/api/tauri";
 
     type Mod = {
         path: string;
@@ -11,16 +14,7 @@
         link: string;
     }
 
-    let modList: Mod[] = [
-        {
-            path: 'path',
-            name: 'Mod',
-            author: 'exejar',
-            version: '1.0.0',
-            link: "https://github.com/Weave-MC/Weave-Loader"
-        }
-    ]
-
+    let modList: Mod[] = []
     let modInfo: Mod
     let infoModal: HTMLDialogElement
 
@@ -29,30 +23,23 @@
         infoModal.showModal()
     }
 
+    async function updateModList() {
+        const entries = await readDir('.weave/mods', {dir: BaseDirectory.Home})
+        modList = await Promise.all(entries
+            .filter(e => e.name.endsWith('.jar') && e.children == null)
+            .map(async (e) => <Mod>{
+                path: e.path,
+                ...await invoke('read_mod_config', { path: e.path })
+            })
+        )
+    }
+
     onMount(async () => {
-        infoModal = document.getElementById('mod-info-modal') as HTMLDialogElement
+        await updateModList()
 
         await watchImmediate(
-            'C:/Users/exeja/.weave/mods',
-            (event) => {
-                const { type, paths } = event
-
-                if (typeof type === 'object') {
-                    if ('create' in type) {
-                        const mod: Mod = {
-                            path: paths[0],
-                            name: paths[0],
-                            author: 'exejar',
-                            version: '1.0.0',
-                            link: 'https://github.com/Weave/Weave-Loader'
-                        }
-                        modList = [...modList, mod]
-                    } else if ('remove' in type) {
-                        const modPathToRemove = paths[0]
-                        modList = modList.filter((mod) => mod.path !== modPathToRemove)
-                    }
-                }
-            }
+            `${await homeDir()}/.weave/mods`,
+            async () => await updateModList()
         );
     });
 </script>
@@ -79,7 +66,7 @@
             {/each}
         </div>
     </div>
-    <dialog id="mod-info-modal" class="modal w-[26rem] h-[14rem]" on:click={modalClicked}>
+    <dialog bind:this={infoModal} class="modal w-[26rem] h-[14rem]" on:click={modalClicked}>
         {#if modInfo}
             <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Mod Information</div>
             <div class="w-full h-full flex flex-row flex-wrap items-end justify-between pb-3">
@@ -112,6 +99,7 @@
     button {
         outline: none;
     }
+
     .modal {
         @apply px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl text-text;
         z-index: 1;
@@ -120,28 +108,36 @@
         box-shadow: 0 0 3rem 1px rgba(0, 0, 0, 0.4);
         transition: all 350ms ease-in-out;
     }
+
     .modal::backdrop {
         background-color: rgba(0, 0, 0, 0.2);
     }
+
     .modal:focus {
         outline: none;
     }
+
     .modal[open] {
         scale: 1;
         opacity: 1;
     }
+
     .mod-item {
         @apply relative bg-surface w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
     }
+
     .mod-buttons {
         transition: opacity 0.1s;
     }
+
     .mod-item:hover .mod-buttons {
         opacity: 1;
     }
+
     .mod-button {
         @apply w-[30%] h-full bg-surface rounded-xl flex items-center justify-center text-sm font-semibold;
     }
+
     .modal-mod-info-item {
         @apply w-1/2 text-center text-sm;
     }

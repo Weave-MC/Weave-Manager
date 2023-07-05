@@ -6,11 +6,15 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::fs;
 use std::env;
+use std::fs::File;
+use std::io::Read;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
-use tauri::State;
+use tauri::{Config, State};
+use zip::result::ZipError;
+use zip::ZipArchive;
 
 #[derive(Serialize)]
 enum ClientType {
@@ -30,9 +34,29 @@ struct MinecraftInstance {
     weave_attached: bool
 }
 
+#[derive(Serialize, Deserialize)]
+struct ModConfig {
+    name: Option<String>,
+    author: Option<String>,
+    version: Option<String>,
+    link: Option<String>,
+}
+
 #[tauri::command]
-fn fetch_minecraft_instances(manager_data: State<ManagerData>) -> Vec<MinecraftInstance> {
-    let mut system = manager_data.system.lock().unwrap();
+fn read_mod_config(path: String) -> Option<ModConfig> {
+    let f = File::open(&path).unwrap();
+    let mut archive = ZipArchive::new(f).unwrap();
+    let conf = match archive.by_name("weave.mod.json") {
+        Ok(conf) => conf,
+        Err(ZipError::FileNotFound) => return None,
+        Err(e) => panic!("{:?}", e)
+    };
+    Some(serde_json::from_reader(conf).unwrap())
+}
+
+#[tauri::command]
+fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInstance> {
+    let mut system = system.lock().unwrap();
     system.refresh_processes_specifics(ProcessRefreshKind::new());
 
     system.processes().values()
@@ -112,13 +136,13 @@ fn get_weave_loader_path() -> Option<PathBuf> {
 }
 
 #[tauri::command]
-fn kill_pid(pid: u32, manager_data: State<ManagerData>) -> bool {
-    manager_data.system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
+fn kill_pid(pid: u32, system: State<Mutex<System>>) -> bool {
+    system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
 }
 
 #[tauri::command]
-fn get_memory_usage(manager_data: State<ManagerData>) -> Vec<String> {
-    let mut sys = manager_data.system.lock().unwrap();
+fn get_memory_usage(system: State<Mutex<System>>) -> Vec<String> {
+    let mut sys = system.lock().unwrap();
     sys.refresh_all();
 
     let total = sys.total_memory();
@@ -160,19 +184,18 @@ fn get_avg_launch_time() -> String {
     "N/A".into()
 }
 
-struct ManagerData {
-    system: Mutex<System>
-}
-
 fn main() {
-    let manager_data = ManagerData {
-        system: Mutex::new(System::new())
-    };
-
     tauri::Builder::default()
         .plugin(tauri_plugin_fs_watch::init())
-        .manage(manager_data)
-        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage, get_avg_launch_time, relaunch_with_weave])
+        .manage(Mutex::new(System::new()))
+        .invoke_handler(tauri::generate_handler![
+            fetch_minecraft_instances,
+            kill_pid,
+            get_memory_usage,
+            get_avg_launch_time,
+            relaunch_with_weave,
+            read_mod_config
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
