@@ -6,11 +6,15 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::fs;
 use std::env;
+use std::fs::File;
+use std::io::Read;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
-use tauri::State;
+use tauri::{Config, State};
+use zip::result::ZipError;
+use zip::ZipArchive;
 
 #[derive(Serialize)]
 enum ClientType {
@@ -28,6 +32,26 @@ struct MinecraftInstance {
     start_time: u64,
     client_type: ClientType,
     weave_attached: bool
+}
+
+#[derive(Serialize, Deserialize)]
+struct ModConfig {
+    name: Option<String>,
+    author: Option<String>,
+    version: Option<String>,
+    link: Option<String>,
+}
+
+#[tauri::command]
+fn read_mod_config(path: String) -> Option<ModConfig> {
+    let f = File::open(&path).unwrap();
+    let mut archive = ZipArchive::new(f).unwrap();
+    let conf = match archive.by_name("weave.mod.json") {
+        Ok(conf) => conf,
+        Err(ZipError::FileNotFound) => return None,
+        Err(e) => panic!("{:?}", e)
+    };
+    Some(serde_json::from_reader(conf).unwrap())
 }
 
 #[tauri::command]
@@ -164,7 +188,14 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs_watch::init())
         .manage(Mutex::new(System::new()))
-        .invoke_handler(tauri::generate_handler![fetch_minecraft_instances, kill_pid, get_memory_usage, get_avg_launch_time, relaunch_with_weave])
+        .invoke_handler(tauri::generate_handler![
+            fetch_minecraft_instances,
+            kill_pid,
+            get_memory_usage,
+            get_avg_launch_time,
+            relaunch_with_weave,
+            read_mod_config
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
