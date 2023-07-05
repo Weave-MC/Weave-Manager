@@ -55,8 +55,8 @@ fn read_mod_config(path: String) -> Option<ModConfig> {
 }
 
 #[tauri::command]
-fn fetch_minecraft_instances(system: State<Mutex<System>>) -> Vec<MinecraftInstance> {
-    let mut system = system.lock().unwrap();
+fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstance> {
+    let mut system = app_state.system.lock().unwrap();
     system.refresh_processes_specifics(ProcessRefreshKind::new());
 
     system.processes().values()
@@ -136,13 +136,13 @@ fn get_weave_loader_path() -> Option<PathBuf> {
 }
 
 #[tauri::command]
-fn kill_pid(pid: u32, system: State<Mutex<System>>) -> bool {
-    system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
+fn kill_pid(pid: u32, app_state: State<AppState>) -> bool {
+    app_state.system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
 }
 
 #[tauri::command]
-fn get_memory_usage(system: State<Mutex<System>>) -> Vec<String> {
-    let mut sys = system.lock().unwrap();
+fn get_memory_usage(app_state: State<AppState>) -> Vec<String> {
+    let mut sys = app_state.system.lock().unwrap();
     sys.refresh_all();
 
     let total = sys.total_memory();
@@ -184,10 +184,18 @@ fn get_avg_launch_time() -> String {
     "N/A".into()
 }
 
+struct AppState {
+    system: Mutex<System>
+}
+
 fn main() {
+    let app_state = AppState {
+        system: Mutex::new(System::new())
+    };
+
     tauri::Builder::default()
         .plugin(tauri_plugin_fs_watch::init())
-        .manage(Mutex::new(System::new()))
+        .manage(app_state)
         .invoke_handler(tauri::generate_handler![
             fetch_minecraft_instances,
             kill_pid,
