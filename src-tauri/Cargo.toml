@@ -22,6 +22,7 @@ sysinfo = "0.29.3"
 lazy_static = "1.4.0"
 tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 zip = { version = "0.6.6", default-features = false, features = ["deflate"] }
+chrono = "0.4.26"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

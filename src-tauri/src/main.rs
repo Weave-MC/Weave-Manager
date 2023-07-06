@@ -3,11 +3,12 @@
 use std::ffi::OsStr;
 use std::sync::Mutex;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Command, Stdio, Child};
 use std::fs;
 use std::env;
 use std::fs::File;
 use std::io::Read;
+use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
@@ -15,6 +16,7 @@ use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
 use tauri::{Config, State};
 use zip::result::ZipError;
 use zip::ZipArchive;
+use chrono::prelude::Local;
 
 #[derive(Serialize)]
 enum ClientType {
@@ -40,6 +42,16 @@ struct ModConfig {
     author: Option<String>,
     version: Option<String>,
     link: Option<String>,
+}
+
+struct WeaveProcess {
+    process: Child,
+    log_path: PathBuf
+}
+#[derive(Debug, Deserialize, Serialize)]
+struct Analytics {
+    launchTimes: Vec<u32>,
+    averageLaunchTime: String,
 }
 
 #[tauri::command]
@@ -97,21 +109,54 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 }
 
 #[tauri::command]
-fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>) {
-    let weave_loader_location = get_weave_loader_path();
+fn swap_process_log_output() {
+
+}
+
+#[tauri::command]
+fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppState>) {
+    let weave_loader_path = get_weave_loader_path();
 
     let mut updated_cmd = cmd_line;
 
-    if !weave_loader_location.is_none() {
-        let java_agent = String::from("-javaagent:") + &weave_loader_location.unwrap().as_path().to_str().unwrap();
+    if !weave_loader_path.is_none() {
+        let java_agent = String::from("-javaagent:") + &weave_loader_path.unwrap().as_path().to_str().unwrap();
         updated_cmd.insert(1, java_agent);
+
+        let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
+
+        let log_path = get_weave_logs_path().unwrap().as_path().join(format!("{}.log", timestamp));
+        let log_file = File::create(&log_path);
 
         let _child = Command::new(&updated_cmd[0])
             .current_dir(Path::new(&cwd))
             .args(&updated_cmd[1..])
+            .stdout(Stdio::from(log_file.expect("Failed to retrieve log file handle")))
+            .stderr(Stdio::from(File::open(&log_path).expect("Failed to open log file for stderr redirection")))
             .spawn()
             .expect("Failed to relaunch with Weave");
+
+        app_state.weave_processes.lock().unwrap().insert(
+            _child.id(),
+            WeaveProcess {
+                process: _child,
+                log_path
+            }
+        );
     }
+}
+
+fn get_weave_logs_path() -> Option<PathBuf> {
+    if let Some(home_dir) = env::home_dir() {
+        let weave_dir = home_dir.join(".weave");
+        let logs_dir = weave_dir.join("logs");
+
+        if logs_dir.is_dir() {
+            return Some(logs_dir);
+        }
+    }
+
+    None
 }
 
 fn get_weave_loader_path() -> Option<PathBuf> {
@@ -153,12 +198,6 @@ fn get_memory_usage(app_state: State<AppState>) -> Vec<String> {
     vec![used.to_string(), total.to_string()]
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Analytics {
-    launchTimes: Vec<u32>,
-    averageLaunchTime: String,
-}
-
 #[tauri::command]
 fn get_avg_launch_time() -> String {
     match env::home_dir() {
@@ -185,12 +224,14 @@ fn get_avg_launch_time() -> String {
 }
 
 struct AppState {
-    system: Mutex<System>
+    system: Mutex<System>,
+    weave_processes: Mutex<HashMap<u32, WeaveProcess>>
 }
 
 fn main() {
     let app_state = AppState {
-        system: Mutex::new(System::new())
+        system: Mutex::new(System::new()),
+        weave_processes: Mutex::new(HashMap::new())
     };
 
     tauri::Builder::default()
