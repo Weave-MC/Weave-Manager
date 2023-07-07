@@ -5,6 +5,7 @@
   import ModList from "./components/ModList.svelte";
   import Analytics from "./components/Analytics.svelte";
   import Console from "./components/ConsoleOutput.svelte";
+  import DropZone from "./components/DropZone.svelte";
 
   let selected = 'theme-darcula'
   let mcInstances: number
@@ -47,6 +48,7 @@
         <Analytics instances="{mcInstances}"/>
       </div>
     </div>
+    <DropZone/>
   </div>
 </main>
 
