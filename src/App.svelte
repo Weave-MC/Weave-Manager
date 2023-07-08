@@ -30,7 +30,6 @@
     promptRelaunch = event.detail.prompt_relaunch
     autoUpdate = event.detail.auto_update
     startupRun = event.detail.startup_run
-    console.log(promptRelaunch)
   }
 
 //   width is 50rem
