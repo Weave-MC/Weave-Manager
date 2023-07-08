@@ -50,7 +50,7 @@ struct WeaveProcess {
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct Analytics {
-    launch_times: Vec<u32>,
+    launch_times: [u32; 10],
     time_played: u64,
     average_launch_time: f32,
 }
@@ -200,7 +200,7 @@ fn get_memory_usage(app_state: State<AppState>) -> Vec<String> {
 }
 
 #[tauri::command]
-fn get_avg_launch_time() -> f32 {
+fn get_analytics() -> Analytics {
     match env::home_dir() {
         Some(path) => {
             let weave_dir = path.join(".weave");
@@ -208,12 +208,20 @@ fn get_avg_launch_time() -> f32 {
             if weave_dir.is_dir() {
                 let analytics_file = weave_dir.join("analytics.json");
                 if !analytics_file.exists() {
-                    return -1.0
+                    return Analytics {
+                        launch_times: [0; 10],
+                        time_played: 0,
+                        average_launch_time: 0.0
+                    }
                 }
 
                 if let Ok(file_content) = fs::read_to_string(analytics_file) {
                     if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
-                        return analytics.average_launch_time;
+                        return Analytics {
+                            launch_times: analytics.launch_times,
+                            time_played: analytics.time_played,
+                            average_launch_time: analytics.average_launch_time
+                        }
                     }
                 }
             }
@@ -221,7 +229,11 @@ fn get_avg_launch_time() -> f32 {
         None => eprintln!("Impossible to get your home dir"),
     }
 
-    -1.0
+    Analytics {
+        launch_times: [0; 10],
+        time_played: 0,
+        average_launch_time: 0.0
+    }
 }
 
 struct AppState {
@@ -242,7 +254,7 @@ fn main() {
             fetch_minecraft_instances,
             kill_pid,
             get_memory_usage,
-            get_avg_launch_time,
+            get_analytics,
             relaunch_with_weave,
             read_mod_config
         ])

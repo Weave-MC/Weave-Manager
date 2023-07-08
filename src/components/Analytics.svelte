@@ -6,6 +6,13 @@
     export let instances: number
     let memoryUsage: string
     let averageLaunchTime: string
+    let timePlayed: string
+
+    type Analytics = {
+        launch_times: number[],
+        time_played: number,
+        average_launch_time: number
+    }
 
     async function getMemoryUsage() {
         try {
@@ -17,29 +24,40 @@
         }
     }
 
-    async function getAvgLaunchTime() {
+    async function getAnalytics() {
         try {
-            const avg_launch_time: number = await invoke('get_avg_launch_time')
+            const analytics: Analytics = await invoke('get_analytics')
 
-            averageLaunchTime = `${avg_launch_time.toFixed(1)}s`;
-
-            if (avg_launch_time == -1)
+            averageLaunchTime = `${analytics.average_launch_time.toFixed(1)}s`
+            if (analytics.average_launch_time == -1)
                 averageLaunchTime = 'N/A'
+
+            timePlayed = formatTimePlayed(analytics.time_played)
         } catch (error) {
             console.error('Error retrieving average launch time:', error)
             averageLaunchTime = 'N/A'
         }
     }
 
+    function formatTimePlayed(timePlayed): string {
+        const totalSeconds = Math.floor(timePlayed / 1000)
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
     let analyticInterval
 
     onMount(() => {
         getMemoryUsage()
-        getAvgLaunchTime()
+        getAnalytics()
 
         analyticInterval = setInterval(() => {
             getMemoryUsage()
-            getAvgLaunchTime()
+            getAnalytics()
         }, 2000)
     });
 
@@ -57,7 +75,7 @@
     </div>
     <div id="content" class="w-full h-full pb-8">
         <div id="statistics" class="w-full h-full flex flex-row flex-wrap items-center justify-center">
-            <Statistic name="Hours Played" value="10"/>
+            <Statistic name="Time Played" value="{timePlayed}"/>
             <Statistic name="Avg. Launch" value="{averageLaunchTime}"/>
             <Statistic name="Instances" value="{instances}"/>
             <Statistic name="Mem Usage" value="{memoryUsage}%"/>
