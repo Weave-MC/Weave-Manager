@@ -1,5 +1,32 @@
-<div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden rounded-lg">
-    <div id="selections" class="absolute w-48 h-60 pt-8 flex flex-col justify-around">
+<script lang="ts">
+    import {clickOutside} from '../click-outside'
+    export let value
+    let open: boolean = false
+
+    function toggleThemeSelector() {
+        open = !open
+
+        const themeSelection = document.getElementById('theme-selection')
+        const classList = themeSelection.classList
+
+        classList.toggle('w-7')
+        classList.toggle('h-7')
+        classList.toggle('w-48')
+        classList.toggle('h-72')
+    }
+
+    function clickedOutside() {
+        if (open)
+            toggleThemeSelector()
+    }
+
+    function selectTheme(theme) {
+        value = theme
+    }
+</script>
+
+<div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden rounded-lg" use:clickOutside on:click_outside={clickedOutside}>
+    <div id="selections" class="absolute w-48 h-72 pt-8 flex flex-col justify-around">
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
         </div>
@@ -32,24 +59,6 @@
         <i class="fa-solid fa-palette"></i>
     </button>
 </div>
-
-<script lang="ts">
-    export let value
-
-    function toggleThemeSelector() {
-        const themeSelection = document.getElementById('theme-selection')
-        const classList = themeSelection.classList
-
-        classList.toggle('w-7')
-        classList.toggle('h-7')
-        classList.toggle('w-48')
-        classList.toggle('h-60')
-    }
-
-    function selectTheme(theme) {
-        value = theme
-    }
-</script>
 
 <style>
     #theme-selection {
