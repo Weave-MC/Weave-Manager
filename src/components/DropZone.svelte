@@ -23,18 +23,16 @@
                 const file = files[i]
 
                 if (!file.endsWith('.jar')) {
-                    failedFiles.push(file)
+                    failedFiles = [...failedFiles, file]
                     continue
                 }
 
                 const modConfig = await invoke('read_mod_config', {path: file})
 
                 if (!modConfig) {
-                    failedFiles.push(file)
+                    failedFiles = [...failedFiles, file]
                     continue
                 }
-
-                // copy file to mod folder
 
                 const filename = file.split(/[\\/]/).pop();
                 await copyFile(file, `${await homeDir()}/.weave/mods/${filename}`)
@@ -78,7 +76,7 @@
         transition: 0.3s all;
     }
     #dropzone-modal {
-        @apply px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl;
+        @apply px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl items-center;
         scale: 0;
         opacity: 0;
         box-shadow: 0 0 3rem 1px rgba(0, 0, 0, 0.4);
