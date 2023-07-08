@@ -28,6 +28,9 @@
         "open": true
       },
       "fs": {
+        "exists": true,
+        "writeFile": true,
+        "readFile": true,
         "readDir": true,
         "copyFile": true,
         "scope": ["$HOME/.weave/*"]
