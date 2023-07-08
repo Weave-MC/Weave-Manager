@@ -29,7 +29,11 @@
       },
       "fs": {
         "readDir": true,
+        "copyFile": true,
         "scope": ["$HOME/.weave/*"]
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {

@@ -2,6 +2,8 @@
     import {onMount} from "svelte";
     import {listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
+    import {copyFile} from "@tauri-apps/api/fs";
+    import {homeDir} from "@tauri-apps/api/path";
 
     let dragging: boolean = false
     let failedFiles: string[] = []
@@ -33,6 +35,9 @@
                 }
 
                 // copy file to mod folder
+
+                const filename = file.split(/[\\/]/).pop();
+                await copyFile(file, `${await homeDir()}/.weave/mods/${filename}`)
             }
 
             if (failedFiles.length > 0)
