@@ -57,10 +57,10 @@
         <h1>Drop to add Weave Mod(s)</h1>
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
     </div>
-    <dialog bind:this={dropzoneModal} id="dropzone-modal" class="w-[26rem] h-[14rem] text-disabled" on:click={modalClicked}>
+    <dialog bind:this={dropzoneModal} id="dropzone-modal" class="w-[26rem] h-[14rem] text-text" on:click={modalClicked}>
         <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center font-bold">You have dropped files that are not Weave Mods</div>
         {#each [...failedFiles.values()] as file}
-            <p class="text-disabled">{file}</p>
+            <p>{file}</p>
         {/each}
     </dialog>
 </div>
@@ -79,7 +79,7 @@
         @apply px-4 py-1 fixed top-0 bottom-0 flex flex-col bg-surface rounded-xl items-center;
         scale: 0;
         opacity: 0;
-        box-shadow: 0 0 3rem 1px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 1rem 5px theme('backgroundColor.disabled');
         transition: all 350ms ease-in-out;
         pointer-events: all;
     }
