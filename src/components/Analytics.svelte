@@ -16,7 +16,7 @@
 
     async function getMemoryUsage() {
         try {
-            const [used, total] = await invoke<string[]>('get_memory_usage')
+            const [used, total] = await invoke<number[]>('get_memory_usage')
             memoryUsage = (used / total * 100).toFixed(2)
         } catch (error) {
             console.error('Error retrieving memory usage:', error)

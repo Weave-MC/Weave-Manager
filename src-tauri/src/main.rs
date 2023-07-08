@@ -110,11 +110,6 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 }
 
 #[tauri::command]
-fn swap_process_log_output() {
-
-}
-
-#[tauri::command]
 fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppState>) {
     let weave_loader_path = get_weave_loader_path();
 
@@ -187,16 +182,15 @@ fn kill_pid(pid: u32, app_state: State<AppState>) -> bool {
 }
 
 #[tauri::command]
-fn get_memory_usage(app_state: State<AppState>) -> Vec<String> {
+fn get_memory_usage(app_state: State<AppState>) -> (u64, u64) {
     let mut sys = app_state.system.lock().unwrap();
-    sys.refresh_all();
+    sys.refresh_processes_specifics(ProcessRefreshKind::new());
 
     let total = sys.total_memory();
-
     let process = sys.process(sysinfo::get_current_pid().unwrap()).unwrap();
     let used = process.memory();
 
-    vec![used.to_string(), total.to_string()]
+    (used, total)
 }
 
 #[tauri::command]
