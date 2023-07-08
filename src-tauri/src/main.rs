@@ -50,8 +50,9 @@ struct WeaveProcess {
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct Analytics {
-    launchTimes: Vec<u32>,
-    averageLaunchTime: String,
+    launch_times: Vec<u32>,
+    time_played: u64,
+    average_launch_time: f32,
 }
 
 #[tauri::command]
@@ -199,7 +200,7 @@ fn get_memory_usage(app_state: State<AppState>) -> Vec<String> {
 }
 
 #[tauri::command]
-fn get_avg_launch_time() -> String {
+fn get_avg_launch_time() -> f32 {
     match env::home_dir() {
         Some(path) => {
             let weave_dir = path.join(".weave");
@@ -207,12 +208,12 @@ fn get_avg_launch_time() -> String {
             if weave_dir.is_dir() {
                 let analytics_file = weave_dir.join("analytics.json");
                 if !analytics_file.exists() {
-                    return "N/A".into()
+                    return -1.0
                 }
 
                 if let Ok(file_content) = fs::read_to_string(analytics_file) {
                     if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
-                        return analytics.averageLaunchTime;
+                        return analytics.average_launch_time;
                     }
                 }
             }
@@ -220,7 +221,7 @@ fn get_avg_launch_time() -> String {
         None => eprintln!("Impossible to get your home dir"),
     }
 
-    "N/A".into()
+    -1.0
 }
 
 struct AppState {

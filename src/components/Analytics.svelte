@@ -19,7 +19,12 @@
 
     async function getAvgLaunchTime() {
         try {
-            averageLaunchTime = await invoke('get_avg_launch_time')
+            const avg_launch_time: number = await invoke('get_avg_launch_time')
+
+            averageLaunchTime = `${avg_launch_time.toFixed(1)}s`;
+
+            if (avg_launch_time == -1)
+                averageLaunchTime = 'N/A'
         } catch (error) {
             console.error('Error retrieving average launch time:', error)
             averageLaunchTime = 'N/A'
