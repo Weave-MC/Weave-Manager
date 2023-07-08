@@ -21,6 +21,7 @@
     }
 
     export let instances = 0
+    export let promptRelaunch: boolean
 
     let processInfo: Process = null
     let relaunchInfo: Process = null
@@ -50,7 +51,7 @@
                     weave_attached: rustProcess.weave_attached
                 }
 
-                if (!minecraftMap.has(rustProcess.pid) && !rustProcess.weave_attached) {
+                if (!minecraftMap.has(rustProcess.pid) && !rustProcess.weave_attached && promptRelaunch) {
                     await appWindow.setFocus()
                     relaunchInfo = minecraft as Process
                     relaunchModal.showModal()

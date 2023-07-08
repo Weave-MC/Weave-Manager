@@ -11,6 +11,10 @@
   let mcInstances: number
   const panelColor = 'bg-surface'
 
+  let promptRelaunch: boolean
+  let autoUpdate: boolean
+  let startupRun: boolean
+
   // unresolved reference because lang is set to ts...
   // im not good with ts so not sure how to fix this but for now it's just a visual issue
   window.modalClicked = event => {
@@ -22,6 +26,13 @@
       target.close()
   }
 
+  function onSettingUpdate(event) {
+    promptRelaunch = event.detail.prompt_relaunch
+    autoUpdate = event.detail.auto_update
+    startupRun = event.detail.startup_run
+    console.log(promptRelaunch)
+  }
+
 //   width is 50rem
 //   height is 35rem
 </script>
@@ -31,13 +42,13 @@
   <div id="page-content" class="bg-base relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
     <div id="top-content" class="flex flex-row gap-4">
       <div class="one-by-two-panel {panelColor}">
-        <MinecraftList bind:instances="{mcInstances}"/>
+        <MinecraftList bind:instances="{mcInstances}" promptRelaunch="{promptRelaunch}"/>
       </div>
       <div class="one-by-two-panel {panelColor}">
         <ModList/>
       </div>
       <div class="one-by-two-panel {panelColor}">
-        <Settings/>
+        <Settings on:update={onSettingUpdate}/>
       </div>
     </div>
     <div id="bottom-content" class="flex flex-row gap-4">

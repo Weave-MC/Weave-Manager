@@ -1,22 +1,28 @@
 <script lang="ts">
     import TogglePill from "./TogglePill.svelte";
-    import {onMount} from "svelte";
+    import {onMount, createEventDispatcher} from "svelte";
     import {writeFile, readTextFile, exists, BaseDirectory} from '@tauri-apps/api/fs'
+
+    const dispatch = createEventDispatcher()
 
     export let promptRelaunch: boolean
     export let startupRun: boolean
     export let autoUpdate: boolean
 
     async function writeConfigFile() {
+        const settings = {
+            prompt_relaunch: promptRelaunch,
+            startup_run: startupRun,
+            auto_update: autoUpdate
+        }
+
         await writeFile(
             `.weave/manager.json`,
-            JSON.stringify({
-                prompt_relaunch: promptRelaunch,
-                startup_run: startupRun,
-                auto_update: autoUpdate
-            }),
+            JSON.stringify(settings),
             {dir: BaseDirectory.Home}
         )
+
+        dispatch('update', settings)
     }
 
     onMount(async() => {
