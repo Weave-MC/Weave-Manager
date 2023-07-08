@@ -33,10 +33,18 @@
         "readFile": true,
         "readDir": true,
         "copyFile": true,
-        "scope": ["$HOME/.weave/*"]
+        "createDir": true,
+        "scope": ["$HOME/**"]
       },
       "path": {
         "all": true
+      },
+      "process": {
+        "relaunch": true
+      },
+      "http": {
+        "request": true,
+        "scope": ["https://api.github.com/repos/Weave-MC/**", "https://github.com/Weave-MC/**"]
       }
     },
     "bundle": {
