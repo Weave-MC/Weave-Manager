@@ -13,6 +13,7 @@
         classList.toggle('h-7')
         classList.toggle('w-48')
         classList.toggle('h-72')
+        classList.toggle('theme-shadow')
     }
 
     function clickedOutside() {
@@ -62,7 +63,11 @@
 
 <style>
     #theme-selection {
-        transition: width 0.3s ease, height 0.3s ease;
+        transition: all 0.3s ease;
+    }
+
+    :global(.theme-shadow) {
+        box-shadow: 5px 6px 5px 0 rgba(0, 0, 0, 0.2);
     }
 
     h1 {
