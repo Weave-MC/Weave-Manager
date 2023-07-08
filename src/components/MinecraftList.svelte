@@ -120,10 +120,6 @@
 
     onMount(() => {
         getMinecraftProcesses()
-
-        infoModal = document.getElementById('process-info-modal') as HTMLDialogElement
-        relaunchModal = document.getElementById('relaunch-modal') as HTMLDialogElement
-
         processInterval = setInterval(() => {
             getMinecraftProcesses()
         }, 1000)
@@ -157,7 +153,7 @@
             {/each}
         </div>
     </div>
-    <dialog id="process-info-modal" class="modal w-[30rem] h-[28rem]" on:click={modalClicked}>
+    <dialog bind:this={infoModal} id="process-info-modal" class="modal w-[30rem] h-[28rem]" on:click={modalClicked}>
         {#if processInfo}
             <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Process Information</div>
             <div class="w-full h-full flex flex-row flex-wrap items-end justify-center pb-3">
@@ -199,7 +195,7 @@
 
         {/if}
     </dialog>
-    <dialog id="relaunch-modal" class="modal w-[25rem] h-[20rem]" on:click={modalClicked}>
+    <dialog bind:this={relaunchModal} id="relaunch-modal" class="modal w-[25rem] h-[20rem]" on:click={modalClicked}>
         <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Detected Minecraft Instance</div>
         <div class="w-full h-full flex flex-col items-center justify-between pb-3">
             {#if relaunchInfo}
