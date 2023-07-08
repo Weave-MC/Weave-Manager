@@ -12,6 +12,9 @@
         <div id="purple-rain-theme" class="theme" on:click={() => selectTheme('theme-purple-rain')}>
             <h1>Purple Rain</h1>
         </div>
+        <div id="gruvbox-theme" class="theme" on:click={() => selectTheme('theme-gruvbox')}>
+            <h1>Gruvbox</h1>
+        </div>
         <div id="purple-cat-macchiato" class="theme" on:click={() => selectTheme('theme-cat-macchiato')}>
             <h1>Cat Macchiato</h1>
         </div>

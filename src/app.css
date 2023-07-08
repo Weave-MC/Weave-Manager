@@ -43,6 +43,16 @@
         --color-enabled: #99C794;
         --color-accent: #5FB3B3;
     }
+    .theme-gruvbox {
+        --color-crust: #1D2021;
+        --color-base: #282828;
+        --color-surface: #3C3836;
+        --color-overlay: #504945;
+        --color-text: #EBDBB2;
+        --color-disabled: #FB4934;
+        --color-enabled: #B8BB26;
+        --color-accent: #98971A;
+    }
     .theme-cat-macchiato {
         --color-crust: #181926;
         --color-base: #24273a;
