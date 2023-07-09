@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onDestroy, onMount} from "svelte"
+    import {onDestroy, onMount, createEventDispatcher} from "svelte"
     import {invoke} from "@tauri-apps/api/tauri"
     import { appWindow } from "@tauri-apps/api/window"
 
@@ -22,6 +22,8 @@
 
     export let instances = 0
     export let promptRelaunch: boolean
+
+    const dispatch = createEventDispatcher()
 
     let processInfo: Process = null
     let relaunchInfo: Process = null
@@ -50,6 +52,8 @@
                     client_type: clientType,
                     weave_attached: rustProcess.weave_attached
                 }
+
+                console.log(promptRelaunch)
 
                 if (!minecraftMap.has(rustProcess.pid) && !rustProcess.weave_attached && promptRelaunch) {
                     await appWindow.setFocus()
@@ -115,6 +119,7 @@
 
     async function showConsole(pid) {
         try {
+            dispatch('switch_console')
             await invoke('switch_console_output', {pid: pid})
         } catch (err) {
             console.error("Error switching console output", err)

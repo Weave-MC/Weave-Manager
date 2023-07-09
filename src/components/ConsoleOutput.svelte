@@ -1,13 +1,16 @@
 <script lang="ts">
     import {listen} from '@tauri-apps/api/event'
     import {onMount} from "svelte";
-
-    // const unlisten = await listen('console_output', (event) => {
-    //     console.log(event)
-    // })
+    import LoadSpinner from "./LoadSpinner.svelte";
 
     let output: string[] = []
     let currentPid: number = 0
+
+    let switchingConsole: boolean = false
+
+    export function switchConsole() {
+        switchingConsole = true
+    }
 
     onMount(async () => {
         await listen('console_output', (event) => {
@@ -16,8 +19,8 @@
             if (currentPid != pid) {
                 currentPid = pid
                 output = []
+                switchingConsole = false
             }
-
 
             output = [...output, line]
         })
@@ -32,11 +35,17 @@
         </div>
     </div>
     <div id="output-content" class="w-full h-full pb-8 pr-1">
-        <div id="output" class="w-full h-full flex overflow-y-scroll flex flex-col pl-0.5 text-xs break-words gap-1">
-            {#each [...output.values()] as line}
-                <p>{line}</p>
-            {/each}
-        </div>
+        {#if switchingConsole}
+            <div id="console-swap" class="w-full h-full flex justify-center items-center">
+                <LoadSpinner/>
+            </div>
+        {:else}
+            <div id="output" class="w-full h-full flex flex-col pl-0.5 text-xs overflow-y-scroll break-words gap-1">
+                {#each [...output.values()] as line}
+                    <p>{line}</p>
+                {/each}
+            </div>
+        {/if}
     </div>
 </div>
 

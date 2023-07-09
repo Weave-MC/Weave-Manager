@@ -24,6 +24,8 @@
   let installModal: HTMLDialogElement
   let restartModal: HTMLDialogElement
 
+  let consoleChild: Console
+
   // unresolved reference because lang is set to ts...
   // im not good with ts so not sure how to fix this but for now it's just a visual issue
   window.modalClicked = event => {
@@ -116,7 +118,7 @@
   <div id="page-content" class="bg-base relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
     <div id="top-content" class="flex flex-row gap-4">
       <div class="one-by-two-panel {panelColor}">
-        <MinecraftList bind:instances="{mcInstances}" promptRelaunch="{promptRelaunch}"/>
+        <MinecraftList bind:instances="{mcInstances}" promptRelaunch="{promptRelaunch}" on:switch_console={() => consoleChild.switchConsole()}/>
       </div>
       <div class="one-by-two-panel {panelColor}">
         <ModList/>
@@ -127,7 +129,7 @@
     </div>
     <div id="bottom-content" class="flex flex-row gap-4">
       <div class="two-by-one-panel {panelColor}">
-        <Console/>
+        <Console bind:this={consoleChild}/>
       </div>
       <div class="one-by-one-panel {panelColor}">
         <Analytics instances="{mcInstances}"/>
