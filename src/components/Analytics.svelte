@@ -17,7 +17,7 @@
     async function getMemoryUsage() {
         try {
             const [used, total] = await invoke<number[]>('get_memory_usage')
-            memoryUsage = (used / total * 100).toFixed(2)
+            memoryUsage = (used / 1000000).toFixed(1)
         } catch (error) {
             console.error('Error retrieving memory usage:', error)
             memoryUsage = 'N/A'
@@ -78,7 +78,7 @@
             <Statistic name="Time Played" value="{timePlayed}"/>
             <Statistic name="Avg. Launch" value="{averageLaunchTime}"/>
             <Statistic name="Instances" value="{instances}"/>
-            <Statistic name="Mem Usage" value="{memoryUsage}%"/>
+            <Statistic name="Mem Usage" value="{memoryUsage}mb"/>
         </div>
     </div>
 </div>
