@@ -63,7 +63,7 @@
         "icons/icon.ico",
         "icons/weave-icon.png"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "net.weavemc.manager",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -86,6 +86,9 @@
     },
     "updater": {
       "active": false
+    },
+    "systemTray": {
+      "iconPath": "icons/weave-icon.png"
     },
     "windows": [
       {

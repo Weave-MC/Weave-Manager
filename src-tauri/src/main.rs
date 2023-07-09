@@ -7,13 +7,13 @@ use std::process::{Command, Stdio, Child};
 use std::fs;
 use std::env;
 use std::fs::File;
-use std::io::Read;
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
-use tauri::{Config, State};
+use tauri::{Manager, State, SystemTrayEvent};
+use tauri::{SystemTray, SystemTrayMenu, CustomMenuItem, SystemTrayMenuItem};
 use zip::result::ZipError;
 use zip::ZipArchive;
 use chrono::prelude::Local;
@@ -241,8 +241,29 @@ fn main() {
         weave_processes: Mutex::new(HashMap::new())
     };
 
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(CustomMenuItem::new("show", "Show"))
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new("quit", "Quit"));
+
+    let tray = SystemTray::new().with_menu(tray_menu);
+
     tauri::Builder::default()
         .plugin(tauri_plugin_fs_watch::init())
+        .system_tray(tray)
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::LeftClick { .. } => {
+                app.get_window("main").unwrap().show().unwrap()
+            }
+            SystemTrayEvent::MenuItemClick { id, .. } => {
+                match id.as_str() {
+                    "show" => app.get_window("main").unwrap().show().unwrap(),
+                    "quit" => std::process::exit(0),
+                    _ => {}
+                }
+            }
+            _ => {}
+        })
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
             fetch_minecraft_instances,
