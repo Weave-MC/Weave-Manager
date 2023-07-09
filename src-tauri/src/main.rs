@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio, Child};
 use std::fs;
 use std::env;
-use std::io::BufRead;
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::fs::File;
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
@@ -121,11 +121,6 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
         let java_agent = String::from("-javaagent:") + &weave_loader_path.unwrap().as_path().to_str().unwrap();
         updated_cmd.insert(1, java_agent);
 
-        let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
-
-        let log_path = get_weave_logs_path().unwrap().as_path().join(format!("{}.log", timestamp));
-        let log_file = File::create(&log_path);
-
         let mut _child = Command::new(&updated_cmd[0])
             .current_dir(Path::new(&cwd))
             .args(&updated_cmd[1..])
@@ -139,10 +134,18 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
         let selected_arc = Arc::clone(&app_state.selected_process);
 
         let stdout_thread = std::thread::spawn(move || {
-            let reader = std::io::BufReader::new(stdout);
+            let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
+
+            let log_path = get_weave_logs_path().unwrap().as_path().join(format!("{}.log", timestamp));
+            let log_file = File::create(&log_path).expect("Failed to create log file");
+
+            let reader = BufReader::new(stdout);
+            let mut writer = BufWriter::with_capacity(1000, log_file);
 
             for line in reader.lines() {
                 if let Ok(line) = line {
+                    writer.write_all(format!("{}\n", line).as_bytes()).expect("Unable to write minecraft output to log file");
+
                     if _child.id() == *selected_arc.lock().unwrap() {
                         app.emit_all("console_output", ConsolePayload {
                             line,
@@ -151,6 +154,8 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
                     }
                 }
             }
+
+            writer.flush();
         });
     }
 }
