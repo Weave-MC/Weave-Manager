@@ -156,7 +156,7 @@
                     <p class="absolute right-4">{calculateRuntime(process.start_time)}</p>
                     <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
                         <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
-                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+<!--                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>-->
                         <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
                         <button class="process-button" on:click={async() => await showConsole(process.pid)}>Console</button>
                     </div>
@@ -198,8 +198,10 @@
                 </div>
                 <div class="w-full h-48 info-item">
                     <p class="font-semibold mb-1">Command Line</p>
-                    <div class="w-full h-44 rounded-xl p-2 bg-base overflow-y-auto break-words select-text">
-                        {processInfo.cmd.join(" ")}
+                    <div class="w-full h-44 rounded-xl p-1 bg-base">
+                        <div class="w-full h-full overflow-y-scroll break-words select-text p-1">
+                            {processInfo.cmd.join(" ")}
+                        </div>
                     </div>
                 </div>
             </div>
