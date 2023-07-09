@@ -47,7 +47,8 @@ struct ModConfig {
 
 struct WeaveProcess {
     process: Child,
-    log_path: PathBuf
+    log_path: PathBuf,
+    selected: bool
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct Analytics {
@@ -151,7 +152,8 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
             _child.id(),
             WeaveProcess {
                 process: _child,
-                log_path
+                log_path,
+                selected: false
             }
         );
     }
