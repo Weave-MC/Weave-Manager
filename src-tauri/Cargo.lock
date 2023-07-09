@@ -77,6 +77,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "lazy_static",
+ "os_pipe",
  "serde",
  "serde_json",
  "sysinfo",
@@ -2019,6 +2020,16 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "os_pipe"
+version = "1.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ae859aa07428ca9a929b936690f8b12dc5f11dd8c6992a18ca93919f28bc177"
+dependencies = [
+ "libc",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

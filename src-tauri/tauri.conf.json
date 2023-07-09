@@ -30,6 +30,7 @@
       "fs": {
         "exists": true,
         "writeFile": true,
+        "renameFile": true,
         "readFile": true,
         "readDir": true,
         "copyFile": true,

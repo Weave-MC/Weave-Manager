@@ -3,17 +3,16 @@
 use std::ffi::OsStr;
 use std::sync::{Mutex, Arc};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio, Child};
-use std::{fs, io};
+use std::process::Command;
+use std::fs;
 use std::env;
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::fs::File;
-use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
-use tauri::{Manager, State, AppHandle, SystemTrayEvent};
+use tauri::{Manager, State, SystemTrayEvent};
 use tauri::{SystemTray, SystemTrayMenu, CustomMenuItem, SystemTrayMenuItem};
 use zip::result::ZipError;
 use zip::ZipArchive;
@@ -135,46 +134,45 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 #[tauri::command]
 fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) {
     let weave_loader_path = get_weave_loader_path();
-
     let mut updated_cmd = cmd_line;
 
     if !weave_loader_path.is_none() {
         let java_agent = String::from("-javaagent:") + &weave_loader_path.unwrap().as_path().to_str().unwrap();
         updated_cmd.insert(1, java_agent);
 
-        let mut _child = Command::new(&updated_cmd[0])
-            .current_dir(Path::new(&cwd))
-            .args(&updated_cmd[1..])
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("Failed to relaunch with Weave");
+        // piped outputs
+        let (reader, writer) = os_pipe::pipe().expect("Failed to created reader and writer pipes");
+        let writer_clone = writer.try_clone().expect("Failed to clone writer pipe");
 
-        let stdout = _child.stdout.take().expect("Failed to capture stdout from child");
+        let mut command = Command::new(&updated_cmd[0]);
+        command.current_dir(Path::new(&cwd))
+            .stdout(writer)
+            .stderr(writer_clone)
+            .args(&updated_cmd[1..]);
+
+        let handle = command.spawn().expect("Failed to relaunch with Weave");
+        drop(command);
+
         let selected_arc = Arc::clone(&app_state.selected_process);
-
-        let stdout_thread = std::thread::spawn(move || {
+        std::thread::spawn(move || {
             let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
-
             let log_path = get_weave_logs_path().join(format!("{}.log", timestamp));
-            let log_file = File::create(&log_path).expect("Failed to create log file");
+            let mut log_file = File::create(&log_path).expect("Failed to create log file");
 
-            let reader = BufReader::new(stdout);
-            let mut writer = BufWriter::with_capacity(1000, log_file);
+            let buf_reader = BufReader::new(reader);
 
-            for line in reader.lines() {
+            for line in buf_reader.lines() {
                 if let Ok(line) = line {
-                    writer.write_all(format!("{}\n", line).as_bytes()).expect("Unable to write minecraft output to log file");
+                    write!(log_file, "{}\n", line).expect("Failed to write output to log file");
 
-                    if _child.id() == *selected_arc.lock().unwrap() {
+                    if handle.id() == *selected_arc.lock().unwrap() {
                         app.emit_all("console_output", ConsolePayload {
                             line,
-                            pid: _child.id()
+                            pid: handle.id()
                         }).expect("Failed to emit console log to renderer");
                     }
                 }
             }
-
-            writer.flush().expect("Failed to flush BufWriter for log file");
         });
     }
 }
