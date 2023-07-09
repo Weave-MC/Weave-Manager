@@ -18,6 +18,7 @@ use tauri::{SystemTray, SystemTrayMenu, CustomMenuItem, SystemTrayMenuItem};
 use zip::result::ZipError;
 use zip::ZipArchive;
 use chrono::prelude::Local;
+use tauri::api::path::home_dir;
 
 #[derive(Serialize)]
 enum ClientType {
@@ -168,7 +169,7 @@ fn switch_console_output(pid: u32, app_state: State<AppState>) {
 }
 
 fn get_weave_logs_path() -> Option<PathBuf> {
-    if let Some(home_dir) = env::home_dir() {
+    if let Some(home_dir) = home_dir() {
         let weave_dir = home_dir.join(".weave");
         let logs_dir = weave_dir.join("logs");
 
@@ -181,7 +182,7 @@ fn get_weave_logs_path() -> Option<PathBuf> {
 }
 
 fn get_weave_loader_path() -> Option<PathBuf> {
-    match env::home_dir() {
+    match home_dir() {
         Some(path) => {
             let weave_dir = path.join(".weave");
 
@@ -220,7 +221,7 @@ fn get_memory_usage(app_state: State<AppState>) -> (u64, u64) {
 
 #[tauri::command]
 fn get_analytics() -> Analytics {
-    match env::home_dir() {
+    match home_dir() {
         Some(path) => {
             let weave_dir = path.join(".weave");
 
