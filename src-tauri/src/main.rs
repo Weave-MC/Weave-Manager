@@ -237,7 +237,7 @@ struct AppState {
 
 fn main() {
     let app_state = AppState {
-        system: Mutex::new(System::new()),
+        system: Mutex::new(System::new_all()),
         weave_processes: Mutex::new(HashMap::new())
     };
 
