@@ -5,9 +5,9 @@
 
     const dispatch = createEventDispatcher()
 
-    export let promptRelaunch: boolean
-    export let startupRun: boolean
-    export let autoUpdate: boolean
+    let promptRelaunch: boolean
+    let startupRun: boolean
+    let autoUpdate: boolean
 
     async function writeConfigFile() {
         const settings = {
@@ -39,6 +39,12 @@
             promptRelaunch = json.prompt_relaunch
             startupRun = json.startup_run
             autoUpdate = json.auto_update
+
+            dispatch('update', {
+                prompt_relaunch: promptRelaunch,
+                startup_run: startupRun,
+                auto_update: autoUpdate
+            })
         }
     })
 </script>
