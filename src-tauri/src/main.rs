@@ -67,6 +67,9 @@ fn get_weave_directory() -> PathBuf {
 fn get_weave_logs_path() -> PathBuf {
     let mut weave_dir = get_weave_directory();
     weave_dir.push("logs");
+    if !weave_dir.exists() {
+        fs::create_dir(&weave_dir).expect("failed to create log directory");
+    }
     return weave_dir;
 }
 
@@ -158,7 +161,6 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
             let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
             let log_path = get_weave_logs_path().join(format!("{}.log", timestamp));
             let mut log_file = File::create(&log_path).expect("Failed to create log file");
-
             let buf_reader = BufReader::new(reader);
 
             for line in buf_reader.lines() {
