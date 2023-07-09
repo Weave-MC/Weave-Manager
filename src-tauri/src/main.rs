@@ -6,13 +6,14 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio, Child};
 use std::fs;
 use std::env;
+use std::io::BufRead;
 use std::fs::File;
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
-use tauri::{Manager, State, SystemTrayEvent};
+use tauri::{Manager, State, AppHandle, SystemTrayEvent};
 use tauri::{SystemTray, SystemTrayMenu, CustomMenuItem, SystemTrayMenuItem};
 use zip::result::ZipError;
 use zip::ZipArchive;
@@ -110,7 +111,7 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 }
 
 #[tauri::command]
-fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppState>) {
+fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) {
     let weave_loader_path = get_weave_loader_path();
 
     let mut updated_cmd = cmd_line;
@@ -124,13 +125,27 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
         let log_path = get_weave_logs_path().unwrap().as_path().join(format!("{}.log", timestamp));
         let log_file = File::create(&log_path);
 
-        let _child = Command::new(&updated_cmd[0])
+        let mut _child = Command::new(&updated_cmd[0])
             .current_dir(Path::new(&cwd))
             .args(&updated_cmd[1..])
-            .stdout(Stdio::from(log_file.expect("Failed to retrieve log file handle")))
-            .stderr(Stdio::from(File::open(&log_path).expect("Failed to open log file for stderr redirection")))
+            .stdout(Stdio::piped())
+            // .stdout(Stdio::from(log_file.expect("Failed to retrieve log file handle")))
+            // .stderr(Stdio::from(File::open(&log_path).expect("Failed to open log file for stderr redirection")))
             .spawn()
             .expect("Failed to relaunch with Weave");
+
+        let stdout = _child.stdout.take().expect("Failed to capture stdout from child");
+
+        let stdout_thread = std::thread::spawn(move || {
+            let reader = std::io::BufReader::new(stdout);
+
+            for line in reader.lines() {
+                if let Ok(line) = line {
+                    app.emit_all("console_output", line);
+                    // println!("output: {}", line)
+                }
+            }
+        });
 
         app_state.weave_processes.lock().unwrap().insert(
             _child.id(),
