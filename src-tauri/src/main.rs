@@ -72,24 +72,10 @@ fn get_weave_logs_path() -> PathBuf {
 }
 
 fn get_weave_loader_path() -> Option<PathBuf> {
-    match home_dir() {
-        Some(path) => {
-            let weave_dir = path.join(".weave");
-
-            if weave_dir.is_dir() {
-                for entry in fs::read_dir(weave_dir).ok()? {
-                    if let Ok(entry) = entry {
-                        if entry.file_name().to_string_lossy().starts_with("Weave-Loader") {
-                            return Some(entry.path())
-                        }
-                    }
-                }
-            }
-        },
-        None => eprintln!("Impossible to get your home dir"),
-    }
-
-    None
+    fs::read_dir(get_weave_directory()).ok()?
+        .filter_map(|e| e.ok())
+        .find(|e| e.file_name().to_string_lossy().starts_with("Weave-Loader"))
+        .map(|e| e.path())
 }
 
 #[tauri::command]
