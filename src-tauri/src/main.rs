@@ -154,6 +154,8 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
             .stderr(writer_clone)
             .args(&updated_cmd[1..])
             .spawn().expect("Failed to relaunch with Weave");
+        
+        app_state.selected_process.compare_and_swap(0, child.id(), Ordering::Relaxed);
 
         let selected_process = Arc::clone(&app_state.selected_process);
         std::thread::spawn(move || {
