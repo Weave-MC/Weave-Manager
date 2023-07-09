@@ -53,8 +53,6 @@
                     weave_attached: rustProcess.weave_attached
                 }
 
-                console.log(promptRelaunch)
-
                 if (!minecraftMap.has(rustProcess.pid) && !rustProcess.weave_attached && promptRelaunch) {
                     await appWindow.setFocus()
                     relaunchInfo = minecraft as Process
