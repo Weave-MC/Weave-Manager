@@ -63,9 +63,8 @@
         <div id="list" class="w-full flex flex-col">
             {#each modList as mod (mod.path)}
                 <div class="relative mod-item {mod.path.endsWith('.disabled') ? 'bg-crust' : 'bg-surface'}">
-                    <p class="absolute left-4">{mod.name}</p>
+                    <p>{mod.name}</p>
                     <p>{mod.version}</p>
-                    <p class="absolute right-4">{mod.author}</p>
                     <div class="mod-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
                         <button class="mod-button" on:click={() => showInfoModal(mod)}>Info</button>
                         {#if mod.path.endsWith('.disabled')}
@@ -96,7 +95,7 @@
                 </div>
                 <div class="modal-mod-info-item">
                     <p class="font-semibold">Status</p>
-                    <p class="select-text">Enabled</p>
+                    <p class="select-text">{modInfo.path.endsWith('.disabled') ? 'Disabled' : 'Enabled'}</p>
                 </div>
                 <div class="w-full text-center">
                     <p class="text-sm font-semibold">Website</p>
@@ -135,7 +134,7 @@
     }
 
     .mod-item {
-        @apply relative w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
+        @apply relative w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-between px-4 items-center;
     }
 
     .mod-buttons {
