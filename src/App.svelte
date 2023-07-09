@@ -12,7 +12,7 @@
   import {getClient, ResponseType} from '@tauri-apps/api/http';
   import {relaunch} from "@tauri-apps/api/process";
 
-  let selected = 'theme-darcula'
+  let selected: string = "theme-darcula"
   let mcInstances: number
   const panelColor = 'bg-surface'
 
@@ -25,6 +25,7 @@
   let restartModal: HTMLDialogElement
 
   let consoleChild: Console
+  let settingsChild: Settings
 
   // unresolved reference because lang is set to ts...
   // im not good with ts so not sure how to fix this but for now it's just a visual issue
@@ -37,10 +38,16 @@
       target.close()
   }
 
+  async function selectTheme(event) {
+    selected = event.detail.theme
+    await settingsChild.writeConfigFile(selected);
+  }
+
   function onSettingUpdate(event) {
     promptRelaunch = event.detail.prompt_relaunch
     autoUpdate = event.detail.auto_update
     startupRun = event.detail.startup_run
+    selected = event.detail.theme
   }
 
   function closeWeaveManager() {
@@ -114,7 +121,7 @@
 </script>
 
 <main id="main" class="{selected} w-screen h-screen overflow-clip text-text">
-  <HeaderBar bind:value={selected}/>
+  <HeaderBar on:select_theme={async(event) => await selectTheme(event)}/>
   <div id="page-content" class="bg-base relative w-screen h-screen flex items-center flex-col pb-10 gap-4 p-4">
     <div id="top-content" class="flex flex-row gap-4">
       <div class="one-by-two-panel {panelColor}">
@@ -124,7 +131,7 @@
         <ModList/>
       </div>
       <div class="one-by-two-panel {panelColor}">
-        <Settings on:update={onSettingUpdate}/>
+        <Settings bind:this={settingsChild} on:update={onSettingUpdate}/>
       </div>
     </div>
     <div id="bottom-content" class="flex flex-row gap-4">

@@ -1,6 +1,20 @@
+<script lang="ts">
+    import { appWindow } from '@tauri-apps/api/window'
+    import weaveIcon from '../weave-icon.png'
+    import ThemeSelection from "./ThemeSelection.svelte"
+
+    function minimize() {
+        appWindow.minimize()
+    }
+
+    function hide() {
+        appWindow.hide()
+    }
+</script>
+
 <div data-tauri-drag-region id="titlebar" class="relative text-xl w-full bg-crust h-10 flex items-center pl-3 gap-3">
     <div id="header-buttons" class="absolute right-0 h-10 flex justify-end gap-2 p-1.5">
-        <ThemeSelection bind:value={value}/>
+        <ThemeSelection on:select_theme/>
         <button class="button hover:bg-overlay" on:click={minimize}>
             <i class="fa-solid fa-minus"></i>
         </button>
@@ -11,21 +25,6 @@
     <img src="{weaveIcon}" id="weave-icon" class="w-7 h-7" alt="Weave Icon">
     <h1>Weave Manager</h1>
 </div>
-
-<script lang="ts">
-    export let value
-    import { appWindow } from '@tauri-apps/api/window'
-    import weaveIcon from '../weave-icon.png'
-    import ThemeSelection from "./ThemeSelection.svelte";
-
-    function minimize() {
-        appWindow.minimize()
-    }
-
-    function hide() {
-        appWindow.hide()
-    }
-</script>
 
 <style>
     #titlebar {

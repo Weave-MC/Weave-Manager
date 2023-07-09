@@ -1,6 +1,8 @@
 <script lang="ts">
     import {clickOutside} from '../click-outside'
-    export let value
+    import {createEventDispatcher} from "svelte"
+
+    const dispatch = createEventDispatcher()
     let open: boolean = false
 
     function toggleThemeSelector() {
@@ -22,7 +24,7 @@
     }
 
     function selectTheme(theme) {
-        value = theme
+        dispatch('select_theme', {theme: theme})
     }
 </script>
 

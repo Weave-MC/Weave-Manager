@@ -5,15 +5,19 @@
 
     const dispatch = createEventDispatcher()
 
+    let theme: string = 'theme-darcula'
     let promptRelaunch: boolean
     let startupRun: boolean
     let autoUpdate: boolean
 
-    async function writeConfigFile() {
+    // the theme argument will be passed from App.svelte to change theme
+    // otherwise when called from Settings.svelte it will pass `let theme: string`
+    export async function writeConfigFile(theme) {
         const settings = {
             prompt_relaunch: promptRelaunch,
             startup_run: startupRun,
-            auto_update: autoUpdate
+            auto_update: autoUpdate,
+            theme: theme
         }
 
         await writeFile(
@@ -27,7 +31,7 @@
 
     onMount(async() => {
         if (!await exists('.weave/manager.json', {dir: BaseDirectory.Home})) {
-            await writeConfigFile()
+            await writeConfigFile(theme)
         } else {
             const content = await readTextFile(
                 '.weave/manager.json',
@@ -36,14 +40,37 @@
 
             const json = JSON.parse(content)
 
+            // Check if any of these keys are missing in the JSON file
+            // If they are, add the key with a default value
+            const requiredKeys = {
+                prompt_relaunch: true,
+                startup_run: true,
+                auto_update: true,
+                theme: 'theme-darcula'
+            }
+            const missingKeys = Object.keys(requiredKeys).filter(key => !(key in json));
+            if (missingKeys.length > 0) {
+                missingKeys.forEach(key => {
+                    json[key] = requiredKeys[key];
+                })
+
+                await writeFile(
+                    `.weave/manager.json`,
+                    JSON.stringify(json),
+                    {dir: BaseDirectory.Home}
+                )
+            }
+
             promptRelaunch = json.prompt_relaunch
             startupRun = json.startup_run
             autoUpdate = json.auto_update
+            theme = json.theme
 
             dispatch('update', {
                 prompt_relaunch: promptRelaunch,
                 startup_run: startupRun,
-                auto_update: autoUpdate
+                auto_update: autoUpdate,
+                theme: theme
             })
         }
     })
