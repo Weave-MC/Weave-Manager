@@ -125,8 +125,6 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
             .current_dir(Path::new(&cwd))
             .args(&updated_cmd[1..])
             .stdout(Stdio::piped())
-            // .stdout(Stdio::from(log_file.expect("Failed to retrieve log file handle")))
-            // .stderr(Stdio::from(File::open(&log_path).expect("Failed to open log file for stderr redirection")))
             .spawn()
             .expect("Failed to relaunch with Weave");
 
@@ -150,12 +148,12 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
                         app.emit_all("console_output", ConsolePayload {
                             line,
                             pid: _child.id()
-                        });
+                        }).expect("Failed to emit console log to renderer");
                     }
                 }
             }
 
-            writer.flush();
+            writer.flush().expect("Failed to flush BufWriter for log file");
         });
     }
 }
