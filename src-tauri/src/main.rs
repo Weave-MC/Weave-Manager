@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::sync::{Mutex, Arc};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio, Child};
-use std::fs;
+use std::{fs, io};
 use std::env;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::fs::File;
@@ -18,6 +18,7 @@ use tauri::{SystemTray, SystemTrayMenu, CustomMenuItem, SystemTrayMenuItem};
 use zip::result::ZipError;
 use zip::ZipArchive;
 use chrono::prelude::Local;
+use tauri::api::path::home_dir;
 
 #[derive(Serialize)]
 enum ClientType {
@@ -55,6 +56,26 @@ struct Analytics {
 struct ConsolePayload {
     line: String,
     pid: u32
+}
+
+#[tauri::command]
+fn get_weave_directory() -> PathBuf {
+    let mut home = home_dir().unwrap();
+    home.push(".weave");
+    return home;
+}
+
+fn get_weave_logs_path() -> PathBuf {
+    let mut weave_dir = get_weave_directory();
+    weave_dir.push("logs");
+    return weave_dir;
+}
+
+fn get_weave_loader_path() -> Option<PathBuf> {
+    fs::read_dir(get_weave_directory()).ok()?
+        .filter_map(|e| e.ok())
+        .find(|e| e.file_name().to_string_lossy().starts_with("Weave-Loader"))
+        .map(|e| e.path())
 }
 
 #[tauri::command]
@@ -134,7 +155,7 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
         let stdout_thread = std::thread::spawn(move || {
             let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
 
-            let log_path = get_weave_logs_path().unwrap().as_path().join(format!("{}.log", timestamp));
+            let log_path = get_weave_logs_path().join(format!("{}.log", timestamp));
             let log_file = File::create(&log_path).expect("Failed to create log file");
 
             let reader = BufReader::new(stdout);
@@ -160,45 +181,7 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
 
 #[tauri::command]
 fn switch_console_output(pid: u32, app_state: State<AppState>) {
-    if let Ok(mut guard) = app_state.selected_process.lock() {
-        *guard = pid.into();
-    } else {
-        eprintln!("Failed to acquire lock on selected process");
-    }
-}
-
-fn get_weave_logs_path() -> Option<PathBuf> {
-    if let Some(home_dir) = env::home_dir() {
-        let weave_dir = home_dir.join(".weave");
-        let logs_dir = weave_dir.join("logs");
-
-        if logs_dir.is_dir() {
-            return Some(logs_dir);
-        }
-    }
-
-    None
-}
-
-fn get_weave_loader_path() -> Option<PathBuf> {
-    match env::home_dir() {
-        Some(path) => {
-            let weave_dir = path.join(".weave");
-
-            if weave_dir.is_dir() {
-                for entry in fs::read_dir(weave_dir).ok()? {
-                    if let Ok(entry) = entry {
-                        if entry.file_name().to_string_lossy().starts_with("Weave-Loader") {
-                            return Some(entry.path())
-                        }
-                    }
-                }
-            }
-        },
-        None => eprintln!("Impossible to get your home dir"),
-    }
-
-    None
+    *app_state.selected_process.lock().unwrap() = pid.into();
 }
 
 #[tauri::command]
@@ -220,32 +203,16 @@ fn get_memory_usage(app_state: State<AppState>) -> (u64, u64) {
 
 #[tauri::command]
 fn get_analytics() -> Analytics {
-    match env::home_dir() {
-        Some(path) => {
-            let weave_dir = path.join(".weave");
+    let analytics_file = get_weave_directory().join("analytics.json");
 
-            if weave_dir.is_dir() {
-                let analytics_file = weave_dir.join("analytics.json");
-                if !analytics_file.exists() {
-                    return Analytics {
-                        launch_times: [0; 10],
-                        time_played: 0,
-                        average_launch_time: 0.0
-                    }
-                }
-
-                if let Ok(file_content) = fs::read_to_string(analytics_file) {
-                    if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
-                        return Analytics {
-                            launch_times: analytics.launch_times,
-                            time_played: analytics.time_played,
-                            average_launch_time: analytics.average_launch_time
-                        }
-                    }
-                }
+    if let Ok(file_content) = fs::read_to_string(analytics_file) {
+        if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
+            return Analytics {
+                launch_times: analytics.launch_times,
+                time_played: analytics.time_played,
+                average_launch_time: analytics.average_launch_time
             }
-        },
-        None => eprintln!("Impossible to get your home dir"),
+        }
     }
 
     Analytics {
