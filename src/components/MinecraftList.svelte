@@ -96,6 +96,8 @@
         try {
             // kill process
             await invoke('kill_pid', {pid: process.pid})
+
+            minecraftMap.delete(process.pid)
             // relaunch process with weave
             await invoke('relaunch_with_weave', {cwd: process.cwd, cmdLine: process.cmd})
         } catch (err) {
@@ -108,6 +110,14 @@
             await invoke('kill_pid', {pid: pid})
         } catch (err) {
             console.error("Error killing process", err)
+        }
+    }
+
+    async function showConsole(pid) {
+        try {
+            await invoke('switch_console_output', {pid: pid})
+        } catch (err) {
+            console.error("Error switching console output", err)
         }
     }
 
@@ -148,6 +158,7 @@
                         <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
                         <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
                         <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
+                        <button class="process-button" on:click={async() => await showConsole(process.pid)}>Console</button>
                     </div>
                 </div>
             {/each}

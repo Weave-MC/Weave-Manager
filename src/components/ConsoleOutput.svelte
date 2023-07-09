@@ -7,10 +7,19 @@
     // })
 
     let output: string[] = []
+    let currentPid: number = 0
 
     onMount(async () => {
         await listen('console_output', (event) => {
-            output = [...output, event.payload as string]
+            const {line, pid} = event.payload
+
+            if (currentPid != pid) {
+                currentPid = pid
+                output = []
+            }
+
+
+            output = [...output, line]
         })
     })
 </script>

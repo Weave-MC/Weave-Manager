@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::ffi::OsStr;
-use std::sync::Mutex;
+use std::sync::{Mutex, Arc};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio, Child};
 use std::fs;
@@ -44,17 +44,17 @@ struct ModConfig {
     version: Option<String>,
     link: Option<String>,
 }
-
-struct WeaveProcess {
-    process: Child,
-    log_path: PathBuf,
-    selected: bool
-}
 #[derive(Debug, Deserialize, Serialize)]
 struct Analytics {
     launch_times: [u32; 10],
     time_played: u64,
     average_launch_time: f32,
+}
+
+#[derive(Clone, Serialize)]
+struct ConsolePayload {
+    line: String,
+    pid: u32
 }
 
 #[tauri::command]
@@ -136,26 +136,31 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
             .expect("Failed to relaunch with Weave");
 
         let stdout = _child.stdout.take().expect("Failed to capture stdout from child");
+        let selected_arc = Arc::clone(&app_state.selected_process);
 
         let stdout_thread = std::thread::spawn(move || {
             let reader = std::io::BufReader::new(stdout);
 
             for line in reader.lines() {
                 if let Ok(line) = line {
-                    app.emit_all("console_output", line);
-                    // println!("output: {}", line)
+                    if _child.id() == *selected_arc.lock().unwrap() {
+                        app.emit_all("console_output", ConsolePayload {
+                            line,
+                            pid: _child.id()
+                        });
+                    }
                 }
             }
         });
+    }
+}
 
-        app_state.weave_processes.lock().unwrap().insert(
-            _child.id(),
-            WeaveProcess {
-                process: _child,
-                log_path,
-                selected: false
-            }
-        );
+#[tauri::command]
+fn switch_console_output(pid: u32, app_state: State<AppState>) {
+    if let Ok(mut guard) = app_state.selected_process.lock() {
+        *guard = pid.into();
+    } else {
+        eprintln!("Failed to acquire lock on selected process");
     }
 }
 
@@ -249,13 +254,13 @@ fn get_analytics() -> Analytics {
 
 struct AppState {
     system: Mutex<System>,
-    weave_processes: Mutex<HashMap<u32, WeaveProcess>>
+    selected_process: Arc<Mutex<u32>>
 }
 
 fn main() {
     let app_state = AppState {
         system: Mutex::new(System::new_all()),
-        weave_processes: Mutex::new(HashMap::new())
+        selected_process: Arc::new(Mutex::new(0))
     };
 
     let tray_menu = SystemTrayMenu::new()
@@ -288,7 +293,8 @@ fn main() {
             get_memory_usage,
             get_analytics,
             relaunch_with_weave,
-            read_mod_config
+            read_mod_config,
+            switch_console_output
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
