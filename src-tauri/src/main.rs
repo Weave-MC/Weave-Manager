@@ -157,9 +157,8 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
 
         let selected_process = Arc::clone(&app_state.selected_process);
         std::thread::spawn(move || {
-            let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
-            let log_path = get_weave_logs_path().join(format!("{}.log", timestamp));
-            let mut log_file = File::create(&log_path).expect("Failed to create log file");
+            let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
+            let mut log_file = File::create(get_weave_logs_path().join(log_name)).expect("Failed to create log file");
             let buf_reader = BufReader::new(reader);
 
             for line in buf_reader.lines() {
