@@ -2,7 +2,7 @@
     import {watchImmediate} from "tauri-plugin-fs-watch-api"
     import {onMount} from "svelte"
     import {open} from "@tauri-apps/api/shell"
-    import {BaseDirectory, readDir} from "@tauri-apps/api/fs";
+    import {renameFile, BaseDirectory, readDir} from "@tauri-apps/api/fs";
     import {homeDir} from "@tauri-apps/api/path";
     import {invoke} from "@tauri-apps/api/tauri";
 
@@ -26,12 +26,20 @@
     async function updateModList() {
         const entries = await readDir('.weave/mods', {dir: BaseDirectory.Home})
         modList = await Promise.all(entries
-            .filter(e => e.name.endsWith('.jar') && e.children == null)
+            .filter(e => e.name.includes('.jar') && e.children == null)
             .map(async (e) => <Mod>{
                 path: e.path,
                 ...await invoke('read_mod_config', { path: e.path })
             })
         )
+    }
+
+    async function disableMod(modPath) {
+        await renameFile(modPath, modPath + '.disabled')
+    }
+
+    async function enableMod(modPath) {
+        await renameFile(modPath, modPath.replace('.disabled', ''))
     }
 
     onMount(async () => {
@@ -54,13 +62,17 @@
     <div id="content" class="w-full h-full pb-8 overflow-y-auto">
         <div id="list" class="w-full flex flex-col">
             {#each modList as mod (mod.path)}
-                <div class="relative mod-item">
+                <div class="relative mod-item {mod.path.endsWith('.disabled') ? 'bg-crust' : 'bg-surface'}">
                     <p class="absolute left-4">{mod.name}</p>
                     <p>{mod.version}</p>
                     <p class="absolute right-4">{mod.author}</p>
                     <div class="mod-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
                         <button class="mod-button" on:click={() => showInfoModal(mod)}>Info</button>
-                        <button class="mod-button">Disable</button>
+                        {#if mod.path.endsWith('.disabled')}
+                            <button class="mod-button" on:click={async() => await enableMod(mod.path)}>Enable</button>
+                        {:else}
+                            <button class="mod-button" on:click={async() => await disableMod(mod.path)}>Disable</button>
+                        {/if}
                     </div>
                 </div>
             {/each}
@@ -123,7 +135,7 @@
     }
 
     .mod-item {
-        @apply relative bg-surface w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
+        @apply relative w-full h-10 border-b-[0.0625rem] border-overlay flex flex-row justify-center items-center;
     }
 
     .mod-buttons {
