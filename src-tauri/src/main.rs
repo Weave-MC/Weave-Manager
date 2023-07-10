@@ -8,6 +8,7 @@ use std::fs;
 use std::env;
 use std::io::{BufRead, BufReader, Write};
 use std::fs::File;
+use std::sync::atomic::{AtomicU32, Ordering};
 use serde::{Serialize, Deserialize};
 use serde_json;
 
@@ -57,7 +58,6 @@ struct ConsolePayload {
     pid: u32
 }
 
-#[tauri::command]
 fn get_weave_directory() -> PathBuf {
     let mut home = home_dir().unwrap();
     home.push(".weave");
@@ -67,6 +67,9 @@ fn get_weave_directory() -> PathBuf {
 fn get_weave_logs_path() -> PathBuf {
     let mut weave_dir = get_weave_directory();
     weave_dir.push("logs");
+    if !weave_dir.exists() {
+        fs::create_dir(&weave_dir).expect("failed to create log directory");
+    }
     return weave_dir;
 }
 
@@ -132,45 +135,37 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 }
 
 #[tauri::command]
-fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) {
-    let weave_loader_path = get_weave_loader_path();
-    let mut updated_cmd = cmd_line;
-
-    if !weave_loader_path.is_none() {
-        let java_agent = String::from("-javaagent:") + &weave_loader_path.unwrap().as_path().to_str().unwrap();
-        updated_cmd.insert(1, java_agent);
+fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) {
+    if let Some(weave_loader_path) = get_weave_loader_path() {
+        let java_agent = String::from("-javaagent:") + &weave_loader_path.to_str().unwrap();
+        cmd_line.insert(1, java_agent);
 
         // piped outputs
-        let (reader, writer) = os_pipe::pipe().expect("Failed to created reader and writer pipes");
-        let writer_clone = writer.try_clone().expect("Failed to clone writer pipe");
+        let (reader, writer) = os_pipe::pipe().expect("Failed to create pipe");
 
-        let mut command = Command::new(&updated_cmd[0]);
-        command.current_dir(Path::new(&cwd))
+        let child = Command::new(&cmd_line[0])
+            .current_dir(Path::new(&cwd))
+            .stderr(writer.try_clone().expect("Failed to clone pipe writer"))
             .stdout(writer)
-            .stderr(writer_clone)
-            .args(&updated_cmd[1..]);
+            .args(&cmd_line[1..])
+            .spawn().expect("Failed to relaunch with Weave");
 
-        let handle = command.spawn().expect("Failed to relaunch with Weave");
-        drop(command);
+        app_state.selected_process.compare_and_swap(0, child.id(), Ordering::Relaxed);
 
-        let selected_arc = Arc::clone(&app_state.selected_process);
+        let selected_process = Arc::clone(&app_state.selected_process);
         std::thread::spawn(move || {
-            let timestamp = Local::now().format("%Y-%m-%d-%H%M%S").to_string();
-            let log_path = get_weave_logs_path().join(format!("{}.log", timestamp));
-            let mut log_file = File::create(&log_path).expect("Failed to create log file");
-
+            let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
+            let mut log_file = File::create(get_weave_logs_path().join(log_name)).expect("Failed to create log file");
             let buf_reader = BufReader::new(reader);
 
-            for line in buf_reader.lines() {
-                if let Ok(line) = line {
-                    write!(log_file, "{}\n", line).expect("Failed to write output to log file");
+            for line in buf_reader.lines().filter_map(|l| l.ok()) {
+                write!(log_file, "{}\n", line).expect("Failed to write output to log file");
 
-                    if handle.id() == *selected_arc.lock().unwrap() {
-                        app.emit_all("console_output", ConsolePayload {
-                            line,
-                            pid: handle.id()
-                        }).expect("Failed to emit console log to renderer");
-                    }
+                if selected_process.load(Ordering::Relaxed) == child.id() {
+                    app.emit_all("console_output", ConsolePayload {
+                        line,
+                        pid: child.id()
+                    }).expect("Failed to emit console log to renderer");
                 }
             }
         });
@@ -179,7 +174,7 @@ fn relaunch_with_weave(cwd: String, cmd_line: Vec<String>, app_state: State<AppS
 
 #[tauri::command]
 fn switch_console_output(pid: u32, app_state: State<AppState>) {
-    *app_state.selected_process.lock().unwrap() = pid.into();
+    app_state.selected_process.store(pid, Ordering::Relaxed)
 }
 
 #[tauri::command]
@@ -222,13 +217,13 @@ fn get_analytics() -> Analytics {
 
 struct AppState {
     system: Mutex<System>,
-    selected_process: Arc<Mutex<u32>>
+    selected_process: Arc<AtomicU32>
 }
 
 fn main() {
     let app_state = AppState {
         system: Mutex::new(System::new_all()),
-        selected_process: Arc::new(Mutex::new(0))
+        selected_process: Arc::new(0.into())
     };
 
     let tray_menu = SystemTrayMenu::new()

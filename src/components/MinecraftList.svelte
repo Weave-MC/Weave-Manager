@@ -2,6 +2,7 @@
     import {onDestroy, onMount, createEventDispatcher} from "svelte"
     import {invoke} from "@tauri-apps/api/tauri"
     import { appWindow } from "@tauri-apps/api/window"
+    import {shiftDown} from "../key-stores";
 
     enum MinecraftType {
         LunarClient = "Lunar",
@@ -29,7 +30,7 @@
     let relaunchInfo: Process = null
     let infoModal: HTMLDialogElement
     let relaunchModal: HTMLDialogElement
-    let minecraftMap = new Map()
+    let minecraftMap = new Map<number, Process>()
 
     async function getMinecraftProcesses() {
         try {
@@ -97,7 +98,7 @@
 
         try {
             // kill process
-            await invoke('kill_pid', {pid: process.pid})
+            await killProcess(process.pid)
 
             minecraftMap.delete(process.pid)
             // relaunch process with weave
@@ -160,7 +161,11 @@
                     <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
                         <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
 <!--                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>-->
-                        <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
+                        {#if !$shiftDown}
+                            <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
+                        {:else}
+                            <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+                        {/if}
                         <button class="process-button" on:click={async() => await showConsole(process.pid)}>Console</button>
                     </div>
                 </div>
