@@ -13,6 +13,8 @@
     // the theme argument will be passed from App.svelte to change theme
     // otherwise when called from Settings.svelte it will pass `let theme: string`
     export async function writeConfigFile(theme) {
+        this.theme = theme
+
         const settings = {
             prompt_relaunch: promptRelaunch,
             startup_run: startupRun,
@@ -85,13 +87,13 @@
     </div>
     <div id="settings" class="flex flex-col w-full h-full pt-2 pb-8 gap-2">
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{promptRelaunch}" id="prompt-weave" name="Prompt Relaunch" on:toggle={async() => await writeConfigFile()}/>
+            <TogglePill bind:enabled="{promptRelaunch}" id="prompt-weave" name="Prompt Relaunch" on:toggle={async() => await writeConfigFile(theme)}/>
         </div>
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{startupRun}" id="startup-run" name="Run on Startup" on:toggle={async() => await writeConfigFile()}/>
+            <TogglePill bind:enabled="{startupRun}" id="startup-run" name="Run on Startup" on:toggle={async() => await writeConfigFile(theme)}/>
         </div>
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{autoUpdate}" id="auto-update" name="Auto Update" on:toggle={async() => await writeConfigFile()}/>
+            <TogglePill bind:enabled="{autoUpdate}" id="auto-update" name="Auto Update" on:toggle={async() => await writeConfigFile(theme)}/>
         </div>
     </div>
 </div>
