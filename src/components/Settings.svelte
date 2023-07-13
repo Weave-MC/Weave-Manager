@@ -12,8 +12,8 @@
 
     // the theme argument will be passed from App.svelte to change theme
     // otherwise when called from Settings.svelte it will pass `let theme: string`
-    export async function writeConfigFile(theme) {
-        this.theme = theme
+    export async function writeConfigFile(_theme) {
+        theme = _theme
 
         const settings = {
             prompt_relaunch: promptRelaunch,
