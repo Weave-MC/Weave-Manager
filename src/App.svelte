@@ -88,7 +88,7 @@
     })
 
     await writeBinaryFile(
-            '.weave/Weave-Loader-Agent.jar',
+            '.weave/loader.jar',
             weaveLoader.data,
             {dir: BaseDirectory.Home}
     )
@@ -98,22 +98,8 @@
   }
 
   onMount(async() => {
-    if (!await exists('.weave', {dir: BaseDirectory.Home})) {
+    if (!await(exists('.weave/loader.jar', {dir: BaseDirectory.Home})))
       installModal.showModal()
-    } else {
-      const entries = await readDir('.weave', {dir: BaseDirectory.Home, recursive: true})
-
-      let installed: boolean = false
-      for (const entry of entries) {
-        if (entry.name.includes('Weave-Loader')) {
-          installed = true
-          break
-        }
-      }
-
-      if (!installed)
-        installModal.showModal()
-    }
   })
 
 //   width is 50rem

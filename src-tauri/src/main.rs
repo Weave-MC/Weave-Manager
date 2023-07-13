@@ -58,26 +58,34 @@ struct ConsolePayload {
     pid: u32
 }
 
-fn get_weave_directory() -> PathBuf {
-    let mut home = home_dir().unwrap();
+fn get_weave_directory() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let mut home = home_dir().ok_or("Home directory not found")?;
     home.push(".weave");
-    return home;
+    Ok(home)
 }
 
-fn get_weave_logs_path() -> PathBuf {
-    let mut weave_dir = get_weave_directory();
-    weave_dir.push("logs");
-    if !weave_dir.exists() {
-        fs::create_dir(&weave_dir).expect("failed to create log directory");
+fn get_weave_logs_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let weave_dir = get_weave_directory()?;
+    let mut logs_dir = weave_dir.clone();
+    logs_dir.push("logs");
+
+    if !logs_dir.exists() {
+        fs::create_dir_all(&logs_dir)?;
     }
-    return weave_dir;
+
+    Ok(logs_dir)
 }
 
-fn get_weave_loader_path() -> Option<PathBuf> {
-    fs::read_dir(get_weave_directory()).ok()?
-        .filter_map(|e| e.ok())
-        .find(|e| e.file_name().to_string_lossy().starts_with("Weave-Loader"))
-        .map(|e| e.path())
+fn get_weave_loader_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let weave_dir = get_weave_directory()?;
+    let mut loader_path = weave_dir.clone();
+    loader_path.push("loader.jar");
+
+    if !loader_path.exists() {
+        return Err("Weave-Loader JAR file (~/.weave/loader.jar) not found".into());
+    }
+
+    Ok(loader_path)
 }
 
 #[tauri::command]
@@ -136,7 +144,7 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 
 #[tauri::command]
 fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) {
-    if let Some(weave_loader_path) = get_weave_loader_path() {
+    if let Ok(weave_loader_path) = get_weave_loader_path() {
         let java_agent = String::from("-javaagent:") + &weave_loader_path.to_str().unwrap();
         cmd_line.insert(1, java_agent);
 
@@ -155,17 +163,19 @@ fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<
         let selected_process = Arc::clone(&app_state.selected_process);
         std::thread::spawn(move || {
             let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
-            let mut log_file = File::create(get_weave_logs_path().join(log_name)).expect("Failed to create log file");
-            let buf_reader = BufReader::new(reader);
+            if let Ok(logs_path) = get_weave_logs_path() {
+                let mut log_file = File::create(logs_path.join(log_name)).expect("Failed to create log file");
+                let buf_reader = BufReader::new(reader);
 
-            for line in buf_reader.lines().filter_map(|l| l.ok()) {
-                write!(log_file, "{}\n", line).expect("Failed to write output to log file");
+                for line in buf_reader.lines().filter_map(|l| l.ok()) {
+                    write!(log_file, "{}\n", line).expect("Failed to write output to log file");
 
-                if selected_process.load(Ordering::Relaxed) == child.id() {
-                    app.emit_all("console_output", ConsolePayload {
-                        line,
-                        pid: child.id()
-                    }).expect("Failed to emit console log to renderer");
+                    if selected_process.load(Ordering::Relaxed) == child.id() {
+                        app.emit_all("console_output", ConsolePayload {
+                            line,
+                            pid: child.id()
+                        }).expect("Failed to emit console log to renderer");
+                    }
                 }
             }
         });
@@ -196,7 +206,7 @@ fn get_memory_usage(app_state: State<AppState>) -> (u64, u64) {
 
 #[tauri::command]
 fn get_analytics() -> Analytics {
-    let analytics_file = get_weave_directory().join("analytics.json");
+    let analytics_file = get_weave_directory().unwrap().join("analytics.json");
 
     if let Ok(file_content) = fs::read_to_string(analytics_file) {
         if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
