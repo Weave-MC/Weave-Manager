@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::fs;
 use std::env;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::fs::File;
 use std::sync::atomic::{AtomicU32, Ordering};
 use serde::{Serialize, Deserialize};
@@ -19,6 +19,8 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 use chrono::prelude::Local;
 use tauri::api::path::home_dir;
+use data_encoding::HEXUPPER;
+use ring::digest::{Context, Digest, SHA256};
 
 #[derive(Serialize)]
 enum ClientType {
@@ -86,6 +88,42 @@ fn get_weave_loader_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
     }
 
     Ok(loader_path)
+}
+
+fn sha256_digest<R: Read>(mut reader: R) -> Result<Digest, Box<dyn std::error::Error>> {
+    let mut context = Context::new(&SHA256);
+    let mut buffer = [0; 1024];
+
+    loop {
+        let count = reader.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        context.update(&buffer[..count]);
+    }
+
+    Ok(context.finish())
+}
+
+#[tauri::command]
+fn check_loader_integrity(sum_to_check: String) -> bool {
+    match get_weave_loader_path() {
+        Ok(weave_loader) => {
+            if let Ok(input) = File::open(&weave_loader) {
+                let reader = BufReader::new(input);
+                if let Ok(digest) = sha256_digest(reader) {
+                    let checksum = HEXUPPER.encode(digest.as_ref());
+                    println!("checksum {}", checksum);
+                    return sum_to_check == checksum
+                }
+            }
+        }
+        Err(err) => {
+            // show error modal
+        }
+    }
+
+    false
 }
 
 #[tauri::command]
@@ -267,7 +305,8 @@ fn main() {
             get_analytics,
             relaunch_with_weave,
             read_mod_config,
-            switch_console_output
+            switch_console_output,
+            check_loader_integrity
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
