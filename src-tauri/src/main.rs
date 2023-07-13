@@ -113,7 +113,6 @@ fn check_loader_integrity(sum_to_check: String) -> bool {
                 let reader = BufReader::new(input);
                 if let Ok(digest) = sha256_digest(reader) {
                     let checksum = HEXUPPER.encode(digest.as_ref());
-                    println!("checksum {}", checksum);
                     return sum_to_check == checksum
                 }
             }
