@@ -11,6 +11,8 @@
   import {appWindow} from "@tauri-apps/api/window";
   import {getClient, ResponseType} from '@tauri-apps/api/http';
   import {relaunch} from "@tauri-apps/api/process";
+  import {invoke} from "@tauri-apps/api/tauri";
+  import LoadSpinner from "./components/LoadSpinner.svelte";
 
   let selected: string = "theme-darcula"
   let mcInstances: number
@@ -100,6 +102,10 @@
   onMount(async() => {
     if (!await(exists('.weave/loader.jar', {dir: BaseDirectory.Home})))
       installModal.showModal()
+    else {
+      // TODO request github api for most checksum of most recent release of Weave-Loader
+      await invoke('check_loader_integrity', {sumToCheck: "69E5EAE16AEDE506A40E295F9860E2A96FEE9E01AAF3445A6991194F8F343998"})
+    }
   })
 
 //   width is 50rem
@@ -132,9 +138,10 @@
   </div>
   <dialog bind:this={installModal} id="install-modal" class="modal w-[26rem] h-[12rem] text-text" on:click={modalClicked}>
     <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Weave is not installed on your computer</div>
-    <div class="w-full h-full flex flex-col items-center justify-center gap-4">
+    <div class="w-full h-full flex flex-col items-center justify-center">
       {#if installing}
-        <h1>Installing Weave...</h1>
+        <h1 class="relative bottom-10">Installing Weave</h1>
+        <LoadSpinner/>
       {:else}
         <button class="w-32 h-8 rounded-xl bg-overlay" on:click={async() => await installWeave()}>
           Install Weave
