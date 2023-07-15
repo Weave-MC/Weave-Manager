@@ -5,22 +5,25 @@
 
     const dispatch = createEventDispatcher()
 
-    let theme: string = 'theme-darcula'
-    let promptRelaunch: boolean
-    let startupRun: boolean
-    let autoUpdate: boolean
+    type Config = {
+        prompt_relaunch: boolean
+        startup_run: boolean
+        auto_update: boolean
+        theme: string
+        loader_version: string
+    }
 
-    // the theme argument will be passed from App.svelte to change theme
-    // otherwise when called from Settings.svelte it will pass `let theme: string`
-    export async function writeConfigFile(_theme) {
-        theme = _theme
+    const defaultKeys: Config = {
+        prompt_relaunch: true,
+        startup_run: true,
+        auto_update: true,
+        theme: 'theme-darcula',
+        loader_version: 'none'
+    }
+    let settings: Config = defaultKeys
 
-        const settings = {
-            prompt_relaunch: promptRelaunch,
-            startup_run: startupRun,
-            auto_update: autoUpdate,
-            theme: theme
-        }
+    export async function writeToConfig(key, value) {
+        settings[key] = value
 
         await writeFile(
             `.weave/manager.json`,
@@ -31,49 +34,53 @@
         dispatch('update', settings)
     }
 
-    onMount(async() => {
-        if (!await exists('.weave/manager.json', {dir: BaseDirectory.Home})) {
-            await writeConfigFile(theme)
-        } else {
-            const content = await readTextFile(
-                '.weave/manager.json',
+    async function writeAll() {
+        await writeFile(
+            `.weave/manager.json`,
+            JSON.stringify(settings),
+            {dir: BaseDirectory.Home}
+        )
+
+        dispatch('update', settings)
+    }
+
+    async function readConfig() {
+        const content = await readTextFile(
+            '.weave/manager.json',
+            {dir: BaseDirectory.Home}
+        )
+        const json = JSON.parse(content)
+
+        const missingKeys = Object.keys(defaultKeys).filter((key => !(key in json)))
+        if (missingKeys.length > 0) {
+            missingKeys.forEach((key) => {
+                json[key] = defaultKeys[key]
+            })
+
+            await writeFile(
+                `.weave/manager.json`,
+                JSON.stringify(json),
                 {dir: BaseDirectory.Home}
             )
+        }
 
-            const json = JSON.parse(content)
+        // make sure that json has the proper keys, if not use default value
+        settings = {
+            prompt_relaunch: json.prompt_relaunch ?? defaultKeys.prompt_relaunch,
+            startup_run: json.startup_run ?? defaultKeys.startup_run,
+            auto_update: json.auto_update ?? defaultKeys.auto_update,
+            theme: json.theme ?? defaultKeys.theme,
+            loader_version: json.loader_version ?? defaultKeys.loader_version,
+        }
+    }
 
-            // Check if any of these keys are missing in the JSON file
-            // If they are, add the key with a default value
-            const requiredKeys = {
-                prompt_relaunch: true,
-                startup_run: true,
-                auto_update: true,
-                theme: 'theme-darcula'
-            }
-            const missingKeys = Object.keys(requiredKeys).filter(key => !(key in json));
-            if (missingKeys.length > 0) {
-                missingKeys.forEach(key => {
-                    json[key] = requiredKeys[key];
-                })
+    onMount(async() => {
+        if (!await exists('.weave/manager.json', {dir: BaseDirectory.Home})) {
+            await writeAll()
+        } else {
+            await readConfig()
 
-                await writeFile(
-                    `.weave/manager.json`,
-                    JSON.stringify(json),
-                    {dir: BaseDirectory.Home}
-                )
-            }
-
-            promptRelaunch = json.prompt_relaunch
-            startupRun = json.startup_run
-            autoUpdate = json.auto_update
-            theme = json.theme
-
-            dispatch('update', {
-                prompt_relaunch: promptRelaunch,
-                startup_run: startupRun,
-                auto_update: autoUpdate,
-                theme: theme
-            })
+            dispatch('update', settings)
         }
     })
 </script>
@@ -87,13 +94,13 @@
     </div>
     <div id="settings" class="flex flex-col w-full h-full pt-2 pb-8 gap-2">
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{promptRelaunch}" id="prompt-weave" name="Prompt Relaunch" on:toggle={async() => await writeConfigFile(theme)}/>
+            <TogglePill bind:enabled="{settings.prompt_relaunch}" id="prompt-weave" name="Prompt Relaunch" on:toggle={async() => await writeAll()}/>
         </div>
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{startupRun}" id="startup-run" name="Run on Startup" on:toggle={async() => await writeConfigFile(theme)}/>
+            <TogglePill bind:enabled="{settings.startup_run}" id="startup-run" name="Run on Startup" on:toggle={async() => await writeAll()}/>
         </div>
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{autoUpdate}" id="auto-update" name="Auto Update" on:toggle={async() => await writeConfigFile(theme)}/>
+            <TogglePill bind:enabled="{settings.auto_update}" id="auto-update" name="Auto Update" on:toggle={async() => await writeAll()}/>
         </div>
     </div>
 </div>
