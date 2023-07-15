@@ -15,6 +15,7 @@ use serde_json;
 use sysinfo::{Pid, PidExt, ProcessExt, ProcessRefreshKind, System, SystemExt};
 use tauri::{Manager, State, SystemTrayEvent};
 use tauri::{SystemTray, SystemTrayMenu, CustomMenuItem, SystemTrayMenuItem};
+use tauri_plugin_autostart::MacosLauncher;
 use zip::result::ZipError;
 use zip::ZipArchive;
 use chrono::prelude::Local;
@@ -282,6 +283,7 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_fs_watch::init())
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"])))
         .system_tray(tray)
         .on_system_tray_event(|app, event| match event {
             SystemTrayEvent::LeftClick { .. } => {

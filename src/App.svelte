@@ -20,7 +20,6 @@
 
   let promptRelaunch: boolean
   let autoUpdate: boolean
-  let startupRun: boolean
   let loaderVersion: string
 
   let installing: boolean = false
@@ -48,13 +47,12 @@
 
   async function selectTheme(event) {
     selected = event.detail.theme
-    await settingsChild.writeToConfig('theme', selected);
+    await settingsChild.writeSetting('theme', selected);
   }
 
   function onSettingUpdate(event) {
     promptRelaunch = event.detail.prompt_relaunch
     autoUpdate = event.detail.auto_update
-    startupRun = event.detail.startup_run
     selected = event.detail.theme
     loaderVersion = event.detail.loader_version
   }
@@ -101,7 +99,7 @@
     await downloadWeaveLoader(updateURL)
 
     loaderVersion = updateVersion
-    settingsChild.writeToConfig('loader_version', loaderVersion)
+    settingsChild.writeSetting('loader_version', loaderVersion)
 
     updateModal.close()
     updating = false
@@ -123,7 +121,7 @@
     const loaderDownload = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0].browser_download_url
     loaderVersion = apiResponse.tag_name
 
-    settingsChild.writeToConfig('loader_version', loaderVersion)
+    settingsChild.writeSetting('loader_version', loaderVersion)
 
     await downloadWeaveLoader(loaderDownload)
 

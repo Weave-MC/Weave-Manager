@@ -2,6 +2,7 @@
     import TogglePill from "./TogglePill.svelte";
     import {onMount, createEventDispatcher} from "svelte";
     import {writeFile, readTextFile, exists, BaseDirectory} from '@tauri-apps/api/fs'
+    import {enable, isEnabled, disable} from "tauri-plugin-autostart-api";
 
     const dispatch = createEventDispatcher()
 
@@ -22,7 +23,7 @@
     }
     let settings: Config = defaultKeys
 
-    export async function writeToConfig(key, value) {
+    export async function writeSetting(key, value) {
         settings[key] = value
 
         await writeFile(
@@ -34,7 +35,7 @@
         dispatch('update', settings)
     }
 
-    async function writeAll() {
+    async function writeSettings() {
         await writeFile(
             `.weave/manager.json`,
             JSON.stringify(settings),
@@ -42,6 +43,18 @@
         )
 
         dispatch('update', settings)
+    }
+
+    async function toggleRunOnStartup() {
+       await writeSettings()
+
+        const enabled = await isEnabled()
+        if (settings.startup_run !== enabled) {
+            if (settings.startup_run)
+                await enable();
+            else
+                await disable();
+        }
     }
 
     async function readConfig() {
@@ -76,7 +89,8 @@
 
     onMount(async() => {
         if (!await exists('.weave/manager.json', {dir: BaseDirectory.Home})) {
-            await writeAll()
+            // Writes the settings file, and enables run on startup
+            await toggleRunOnStartup()
         } else {
             await readConfig()
 
@@ -94,13 +108,13 @@
     </div>
     <div id="settings" class="flex flex-col w-full h-full pt-2 pb-8 gap-2">
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{settings.prompt_relaunch}" id="prompt-weave" name="Prompt Relaunch" on:toggle={async() => await writeAll()}/>
+            <TogglePill bind:enabled="{settings.prompt_relaunch}" id="prompt-weave" name="Prompt Relaunch" on:toggle={async() => await writeSettings()}/>
         </div>
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{settings.startup_run}" id="startup-run" name="Run on Startup" on:toggle={async() => await writeAll()}/>
+            <TogglePill bind:enabled="{settings.startup_run}" id="startup-run" name="Run on Startup" on:toggle={async() => await toggleRunOnStartup()}/>
         </div>
         <div class="setting-toggle">
-            <TogglePill bind:enabled="{settings.auto_update}" id="auto-update" name="Auto Update" on:toggle={async() => await writeAll()}/>
+            <TogglePill bind:enabled="{settings.auto_update}" id="auto-update" name="Auto Update" on:toggle={async() => await writeSettings()}/>
         </div>
     </div>
 </div>

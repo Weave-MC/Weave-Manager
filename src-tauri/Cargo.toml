@@ -21,6 +21,7 @@ tauri = { version = "1.4.0", features = [ "updater", "fs-rename-file", "system-t
 sysinfo = "0.29.3"
 lazy_static = "1.4.0"
 tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 zip = { version = "0.6.6", default-features = false, features = ["deflate"] }
 chrono = "0.4.26"
 os_pipe = "1.1.4"
