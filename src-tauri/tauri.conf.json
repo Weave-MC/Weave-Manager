@@ -86,7 +86,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://raw.githubusercontent.com/Nilsen84/Weave-Manager-Tauri/master/update.json"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlBRDUyRjAxODU5M0I1NTUKUldSVnRaT0ZBUy9WbXRWbUh5WUN3eTVPcG5nRklhUlV5RHVqdVhmNlhpOTZmWXhvWGUrSUJWcDcK"
     },
     "systemTray": {
       "iconPath": "icons/weave-icon.png"
