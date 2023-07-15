@@ -24,8 +24,13 @@
   let loaderVersion: string
 
   let installing: boolean = false
+  let updating: boolean = false
   let installModal: HTMLDialogElement
   let restartModal: HTMLDialogElement
+  let updateModal: HTMLDialogElement
+  let updateURL: string
+  let updateVersion: string
+  let httpClient: Client
 
   let consoleChild: Console
   let settingsChild: Settings
@@ -43,7 +48,7 @@
 
   async function selectTheme(event) {
     selected = event.detail.theme
-    await settingsChild.writeConfigFile(selected);
+    await settingsChild.writeToConfig('theme', selected);
   }
 
   function onSettingUpdate(event) {
@@ -58,63 +63,18 @@
     appWindow.close()
   }
 
-  type Author = {
-    login: string
-    id: number
-    node_id: string
-    avatar_url: string
-    gravatar_id: string
-    url: string
-    html_url: string
-    followers_url: string
-    following_url: string
-    gists_url: string
-    starred_url: string
-    subscriptions_url: string
-    organizations_url: string
-    repos_url: string
-    events_url: string
-    received_events_url: string
-    type: string
-    site_admin: boolean
-  }
-
   type Asset = {
-    url: string
-    id: number
-    node_id: string
     name: string
-    label: string
-    uploader: Author
-    content_type: string
-    state: string
-    size: number
-    download_count: number
-    created_at: string
-    updated_at: string
     browser_download_url: string
   }
 
   type GitHubApiResponse = {
-    url: string
-    assets_url: string
-    upload_url: string
-    html_url: string
-    id: number
-    author: Author
-    node_id: string
     tag_name: string
-    target_commitish: string
-    name: string
-    draft: boolean
-    prerelease: boolean
-    created_at: string
-    published_at: string
     assets: [Asset]
   }
 
-  async function fetchGithubApi(client: Client) {
-    const latest = await client.get('https://api.github.com/repos/Weave-MC/Weave-Loader/releases/latest', {
+  async function fetchGithubApi() {
+    const latest = await httpClient.get('https://api.github.com/repos/Weave-MC/Weave-Loader/releases/latest', {
       headers: {
         'User-Agent': 'weave-manager'
       }
@@ -123,8 +83,8 @@
     return latest.data as GitHubApiResponse
   }
 
-  async function downloadWeaveLoader(client: Client, url: String) {
-    const response = await client.get(url, {
+  async function downloadWeaveLoader(url: String) {
+    const response = await httpClient.get(url, {
       responseType: ResponseType.Binary
     })
 
@@ -133,6 +93,18 @@
             response.data,
             {dir: BaseDirectory.Home}
     )
+  }
+
+  async function updateWeaveLoader() {
+    updating = true
+
+    await downloadWeaveLoader(updateURL)
+
+    loaderVersion = updateVersion
+    settingsChild.writeToConfig('loader_version', loaderVersion)
+
+    updateModal.close()
+    updating = false
   }
 
   async function installWeave() {
@@ -147,31 +119,38 @@
             }),
             {dir: BaseDirectory.Home})
 
-    const client = await getClient()
-    const apiResponse = await fetchGithubApi(client)
+    const apiResponse = await fetchGithubApi()
     const loaderDownload = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0].browser_download_url
     loaderVersion = apiResponse.tag_name
 
-    await downloadWeaveLoader(client, loaderDownload)
+    settingsChild.writeToConfig('loader_version', loaderVersion)
+
+    await downloadWeaveLoader(loaderDownload)
 
     installModal.close()
     restartModal.showModal()
   }
 
   onMount(async() => {
+    httpClient = await getClient()
+
     if (!await(exists('.weave/loader.jar', {dir: BaseDirectory.Home})))
       installModal.showModal()
     else {
-      const client = await getClient()
-      const apiResponse = await fetchGithubApi(client)
+      const apiResponse = await fetchGithubApi()
       const loaderAsset = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0]
       const sha256Url = apiResponse.assets.filter(asset => asset.name === `${loaderAsset.name}.sha256`)[0].browser_download_url
 
-      const sha256Response = await client.get(sha256Url, {
+      updateVersion = apiResponse.tag_name
+      updateURL = loaderAsset.browser_download_url
+
+      const sha256Response = await httpClient.get(sha256Url, {
         responseType: ResponseType.Text
       })
       const sha256 = sha256Response.data.split(' ')[0]
-      await invoke('check_loader_integrity', {sumToCheck: sha256.toUpperCase()})
+      if (!await invoke('check_loader_integrity', {sumToCheck: sha256.toUpperCase()})) {
+        updateModal.showModal()
+      }
     }
   })
 
@@ -205,7 +184,7 @@
   </div>
   <dialog bind:this={installModal} id="install-modal" class="modal w-[26rem] h-[12rem] text-text" on:click={modalClicked}>
     <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Weave is not installed on your computer</div>
-    <div class="w-full h-full flex flex-col items-center justify-center">
+    <div class="w-full h-full flex flex-col items-center justify-center {installing ? '' : 'gap-2'}">
       {#if installing}
         <h1 class="relative bottom-10">Installing Weave</h1>
         <LoadSpinner/>
@@ -215,6 +194,23 @@
         </button>
         <button class="text-sm" on:click={closeWeaveManager}>
           Close Weave Manager
+        </button>
+      {/if}
+    </div>
+  </dialog>
+  <dialog bind:this={updateModal} id="update-modal" class="modal w-[26rem] h-[12rem] text-text" on:click={modalClicked}>
+    <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">Weave is outdated or corrupted on your computer</div>
+    <div class="relative w-full h-full pt-10 flex flex-col items-center justify-center {updating ? '' : 'gap-2'}">
+      {#if updating}
+        <h1 class="relative bottom-10">Updating Weave</h1>
+        <LoadSpinner/>
+      {:else}
+        <h1 class="absolute top-5">New Version: {updateVersion}</h1>
+        <button class="w-32 h-8 rounded-xl bg-overlay" on:click={async() => await updateWeaveLoader()}>
+          Update Weave
+        </button>
+        <button class="text-sm" on:click={updateModal.close}>
+          No Thanks
         </button>
       {/if}
     </div>
