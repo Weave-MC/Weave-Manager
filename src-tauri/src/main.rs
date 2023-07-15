@@ -161,7 +161,7 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
                 ClientType::Vanilla
             };
 
-            let weave_attached = if proc.cmd().iter().any(|arg| arg.contains("Weave-Loader")) {
+            let weave_attached = if proc.cmd().iter().any(|arg| arg.contains("loader.jar") && arg.contains("-javaagent")) {
                 true
             } else {
                 false
