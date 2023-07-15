@@ -7,9 +7,9 @@
   import Console from "./components/ConsoleOutput.svelte";
   import DropZone from "./components/DropZone.svelte";
   import {onMount} from "svelte";
-  import {writeFile, writeBinaryFile, createDir, readDir, exists, BaseDirectory} from '@tauri-apps/api/fs'
+  import {writeFile, writeBinaryFile, createDir, exists, BaseDirectory} from '@tauri-apps/api/fs'
   import {appWindow} from "@tauri-apps/api/window";
-  import {getClient, ResponseType} from '@tauri-apps/api/http';
+  import {Client, getClient, ResponseType} from '@tauri-apps/api/http';
   import {relaunch} from "@tauri-apps/api/process";
   import {invoke} from "@tauri-apps/api/tauri";
   import LoadSpinner from "./components/LoadSpinner.svelte";
@@ -21,6 +21,7 @@
   let promptRelaunch: boolean
   let autoUpdate: boolean
   let startupRun: boolean
+  let loaderVersion: string
 
   let installing: boolean = false
   let installModal: HTMLDialogElement
@@ -50,10 +51,88 @@
     autoUpdate = event.detail.auto_update
     startupRun = event.detail.startup_run
     selected = event.detail.theme
+    loaderVersion = event.detail.loader_version
   }
 
   function closeWeaveManager() {
     appWindow.close()
+  }
+
+  type Author = {
+    login: string
+    id: number
+    node_id: string
+    avatar_url: string
+    gravatar_id: string
+    url: string
+    html_url: string
+    followers_url: string
+    following_url: string
+    gists_url: string
+    starred_url: string
+    subscriptions_url: string
+    organizations_url: string
+    repos_url: string
+    events_url: string
+    received_events_url: string
+    type: string
+    site_admin: boolean
+  }
+
+  type Asset = {
+    url: string
+    id: number
+    node_id: string
+    name: string
+    label: string
+    uploader: Author
+    content_type: string
+    state: string
+    size: number
+    download_count: number
+    created_at: string
+    updated_at: string
+    browser_download_url: string
+  }
+
+  type GitHubApiResponse = {
+    url: string
+    assets_url: string
+    upload_url: string
+    html_url: string
+    id: number
+    author: Author
+    node_id: string
+    tag_name: string
+    target_commitish: string
+    name: string
+    draft: boolean
+    prerelease: boolean
+    created_at: string
+    published_at: string
+    assets: [Asset]
+  }
+
+  async function fetchGithubApi(client: Client) {
+    const latest = await client.get('https://api.github.com/repos/Weave-MC/Weave-Loader/releases/latest', {
+      headers: {
+        'User-Agent': 'weave-manager'
+      }
+    })
+
+    return latest.data as GitHubApiResponse
+  }
+
+  async function downloadWeaveLoader(client: Client, url: String) {
+    const response = await client.get(url, {
+      responseType: ResponseType.Binary
+    })
+
+    await writeBinaryFile(
+            '.weave/loader.jar',
+            response.data,
+            {dir: BaseDirectory.Home}
+    )
   }
 
   async function installWeave() {
@@ -69,31 +148,11 @@
             {dir: BaseDirectory.Home})
 
     const client = await getClient()
-    const latest = await client.get('https://api.github.com/repos/Weave-MC/Weave-Loader/releases/latest', {
-      headers: {
-        'User-Agent': 'weave-manager'
-      }
-    })
+    const apiResponse = await fetchGithubApi(client)
+    const loaderDownload = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0].browser_download_url
+    loaderVersion = apiResponse.tag_name
 
-    const latestAssetsUrl = latest.data.assets_url
-
-    const latestAssets = await client.get(latestAssetsUrl, {
-      headers: {
-        'User-Agent': 'weave-manager'
-      }
-    })
-
-    const weaveDownload = latestAssets.data[0].browser_download_url
-
-    const weaveLoader = await client.get(weaveDownload, {
-      responseType: ResponseType.Binary
-    })
-
-    await writeBinaryFile(
-            '.weave/loader.jar',
-            weaveLoader.data,
-            {dir: BaseDirectory.Home}
-    )
+    await downloadWeaveLoader(client, loaderDownload)
 
     installModal.close()
     restartModal.showModal()
@@ -103,8 +162,16 @@
     if (!await(exists('.weave/loader.jar', {dir: BaseDirectory.Home})))
       installModal.showModal()
     else {
-      // TODO request github api for most checksum of most recent release of Weave-Loader
-      await invoke('check_loader_integrity', {sumToCheck: "69E5EAE16AEDE506A40E295F9860E2A96FEE9E01AAF3445A6991194F8F343998"})
+      const client = await getClient()
+      const apiResponse = await fetchGithubApi(client)
+      const loaderAsset = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0]
+      const sha256Url = apiResponse.assets.filter(asset => asset.name === `${loaderAsset.name}.sha256`)[0].browser_download_url
+
+      const sha256Response = await client.get(sha256Url, {
+        responseType: ResponseType.Text
+      })
+      const sha256 = sha256Response.data.split(' ')[0]
+      await invoke('check_loader_integrity', {sumToCheck: sha256.toUpperCase()})
     }
   })
 
