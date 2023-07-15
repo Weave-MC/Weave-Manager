@@ -6,7 +6,7 @@
   import Analytics from "./components/Analytics.svelte";
   import Console from "./components/ConsoleOutput.svelte";
   import DropZone from "./components/DropZone.svelte";
-  import {onMount} from "svelte";
+  import {onDestroy, onMount} from "svelte";
   import {writeFile, writeBinaryFile, createDir, exists, BaseDirectory} from '@tauri-apps/api/fs'
   import {appWindow} from "@tauri-apps/api/window";
   import {Client, getClient, ResponseType} from '@tauri-apps/api/http';
@@ -131,29 +131,43 @@
     restartModal.showModal()
   }
 
+  async function checkForLoaderUpdate() {
+    const apiResponse = await fetchGithubApi()
+    const loaderAsset = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0]
+    const sha256Url = apiResponse.assets.filter(asset => asset.name === `${loaderAsset.name}.sha256`)[0].browser_download_url
+
+    updateVersion = apiResponse.tag_name
+    updateURL = loaderAsset.browser_download_url
+
+    const sha256Response = await httpClient.get(sha256Url, {
+      responseType: ResponseType.Text
+    })
+    const sha256 = sha256Response.data.split(' ')[0]
+    if (!await invoke('check_loader_integrity', {sumToCheck: sha256.toUpperCase()})) {
+      updateModal.showModal()
+      if (autoUpdate)
+        await updateWeaveLoader()
+    }
+  }
+
+  let updateInterval
+
   onMount(async() => {
     httpClient = await getClient()
 
     if (!await(exists('.weave/loader.jar', {dir: BaseDirectory.Home})))
       installModal.showModal()
     else {
-      const apiResponse = await fetchGithubApi()
-      const loaderAsset = apiResponse.assets.filter(asset => asset.name.endsWith('.jar'))[0]
-      const sha256Url = apiResponse.assets.filter(asset => asset.name === `${loaderAsset.name}.sha256`)[0].browser_download_url
-
-      updateVersion = apiResponse.tag_name
-      updateURL = loaderAsset.browser_download_url
-
-      const sha256Response = await httpClient.get(sha256Url, {
-        responseType: ResponseType.Text
-      })
-      const sha256 = sha256Response.data.split(' ')[0]
-      if (!await invoke('check_loader_integrity', {sumToCheck: sha256.toUpperCase()})) {
-        updateModal.showModal()
-        if (autoUpdate)
-          await updateWeaveLoader()
-      }
+      await checkForLoaderUpdate()
     }
+
+    updateInterval = setInterval(async () => {
+      await checkForLoaderUpdate()
+    }, 30 * 60_000)
+  })
+
+  onDestroy(() => {
+    clearInterval(updateInterval)
   })
 
 //   width is 50rem
@@ -212,7 +226,7 @@
           Update Weave
         </button>
         <button class="text-sm" on:click={updateModal.close}>
-          No Thanks
+          Skip Update
         </button>
       {/if}
     </div>
