@@ -150,6 +150,8 @@
       const sha256 = sha256Response.data.split(' ')[0]
       if (!await invoke('check_loader_integrity', {sumToCheck: sha256.toUpperCase()})) {
         updateModal.showModal()
+        if (autoUpdate)
+          await updateWeaveLoader()
       }
     }
   })
