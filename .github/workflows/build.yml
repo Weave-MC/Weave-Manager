@@ -42,7 +42,7 @@ jobs:
 
     - run: npm i
     
-    - name: Build ${{ github.event_name == 'release' && '+ Release' || '' }}
+    - name: ${{{ github.event_name == 'release' && 'Build + Release' || 'Build' }}
       uses: tauri-apps/tauri-action@v0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
