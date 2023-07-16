@@ -33,6 +33,12 @@
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
         </div>
+		<div id="amoled-theme" class="theme" on:click={() => selectTheme('theme-amoled')}>
+            <h1>Amoled</h1>
+        </div>
+		<div id="deep-ocean-theme" class="theme" on:click={() => selectTheme('theme-deep-ocean')}>
+            <h1>Deep Ocean</h1>
+        </div>
         <div id="light-theme" class="theme" on:click={() => selectTheme('theme-light')}>
             <h1>Light</h1>
         </div>
