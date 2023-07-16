@@ -33,12 +33,6 @@
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
         </div>
-		<div id="amoled-theme" class="theme" on:click={() => selectTheme('theme-amoled')}>
-            <h1>Amoled</h1>
-        </div>
-		<div id="deep-ocean-theme" class="theme" on:click={() => selectTheme('theme-deep-ocean')}>
-            <h1>Deep Ocean</h1>
-        </div>
         <div id="light-theme" class="theme" on:click={() => selectTheme('theme-light')}>
             <h1>Light</h1>
         </div>
@@ -51,14 +45,20 @@
         <div id="gruvbox-theme" class="theme" on:click={() => selectTheme('theme-gruvbox')}>
             <h1>Gruvbox</h1>
         </div>
-        <div id="purple-cat-macchiato" class="theme" on:click={() => selectTheme('theme-cat-macchiato')}>
+        <div id="cat-macchiato" class="theme" on:click={() => selectTheme('theme-cat-macchiato')}>
             <h1>Cat Macchiato</h1>
         </div>
-        <div id="purple-cat-mocha" class="theme" on:click={() => selectTheme('theme-cat-mocha')}>
+        <div id="cat-mocha" class="theme" on:click={() => selectTheme('theme-cat-mocha')}>
             <h1>Cat Mocha</h1>
         </div>
-        <div id="purple-cat-frappe" class="theme" on:click={() => selectTheme('theme-cat-frappe')}>
+        <div id="cat-frappe" class="theme" on:click={() => selectTheme('theme-cat-frappe')}>
             <h1>Cat Frappé</h1>
+        </div>
+        <div id="deep-ocean-theme" class="theme" on:click={() => selectTheme('theme-deep-ocean')}>
+            <h1>Deep Ocean</h1>
+        </div>
+        <div id="amoled-theme" class="theme" on:click={() => selectTheme('theme-amoled')}>
+            <h1>Amoled</h1>
         </div>
     </div>
     <div id="title" class="absolute w-48 h-8 pl-3 flex items-center border-b-2 b border-overlay">
