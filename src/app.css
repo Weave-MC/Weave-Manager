@@ -22,8 +22,8 @@
     --color-disabled: #FF0000;
     --color-enabled: #00FF00;
     --color-accent: #FFFFFF;
-	}
-	.theme-deep-ocean {
+    }
+    .theme-deep-ocean {
     --color-crust: #040c18;
     --color-base: #040c18;
     --color-surface: #040c18;
@@ -32,7 +32,7 @@
     --color-disabled: #FF0000;
     --color-enabled: #00FF00;
     --color-accent: #FFFFFF;
-	}
+    }
     .theme-light {
         --color-crust: #f2f2f2;
         --color-base: #e2e6ec;
