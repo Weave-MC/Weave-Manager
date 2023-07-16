@@ -60,6 +60,19 @@
         <div id="amoled-theme" class="theme" on:click={() => selectTheme('theme-amoled')}>
             <h1>Amoled</h1>
         </div>
+        <div id="nord-theme" class="theme" on:click={() => selectTheme('theme-nord')}>
+            <h1>Nord</h1>
+        </div>
+        <div id="acri-theme" class="theme" on:click={() => selectTheme('theme-acri')}>
+            <h1>Acri</h1>
+        </div>
+        <div id="atom-dark-theme" class="theme" on:click={() => selectTheme('theme-atom-dark')}>
+            <h1>Atom Dark</h1>
+        </div>
+        <div id="tokyo-night-theme" class="theme" on:click={() => selectTheme('theme-tokyo-night')}>
+            <h1>Tokyo Night</h1>
+        </div>
+
     </div>
     <div id="title" class="absolute w-48 h-8 pl-3 flex items-center border-b-2 b border-overlay">
         <h1>Theme Selection</h1>
