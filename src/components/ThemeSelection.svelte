@@ -1,6 +1,6 @@
 <script lang="ts">
-    import {clickOutside} from '../click-outside'
-    import {createEventDispatcher} from "svelte"
+    import { clickOutside } from '../click-outside'
+    import { createEventDispatcher } from "svelte"
 
     const dispatch = createEventDispatcher()
     let open: boolean = false
@@ -24,12 +24,12 @@
     }
 
     function selectTheme(theme) {
-        dispatch('select_theme', {theme: theme})
+        dispatch('select_theme', { theme: theme })
     }
 </script>
 
 <div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden rounded-lg" use:clickOutside on:click_outside={clickedOutside}>
-    <div id="selections" class="absolute w-48 h-72 pt-8 flex flex-col justify-around">
+    <div id="selections" class="absolute w-48 max-h-60 pt-8 flex flex-col justify-around overflow-auto top-10">
         <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
             <h1>Darcula</h1>
         </div>
@@ -72,7 +72,6 @@
         <div id="tokyo-night-theme" class="theme" on:click={() => selectTheme('theme-tokyo-night')}>
             <h1>Tokyo Night</h1>
         </div>
-
     </div>
     <div id="title" class="absolute w-48 h-8 pl-3 flex items-center border-b-2 b border-overlay">
         <h1>Theme Selection</h1>
@@ -97,5 +96,19 @@
 
     .theme {
         @apply w-full pl-3 cursor-pointer;
+    }
+
+    #selections {
+        scroll-behavior: smooth;
+    }
+
+    #selections::-webkit-scrollbar {
+        width: 4px;
+        background-color: rgba(0, 0, 0, 0)
+    }
+
+    #selections::-webkit-scrollbar-thumb {
+        background-color: var(--color-overlay);
+        border-radius: 50px;
     }
 </style>
