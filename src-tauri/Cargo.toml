@@ -27,6 +27,7 @@ chrono = "0.4.26"
 os_pipe = "1.1.4"
 ring = "0.16.20"
 data-encoding = "2.4.0"
+thiserror = "1.0.43"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
