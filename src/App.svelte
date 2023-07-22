@@ -13,6 +13,7 @@
   import {relaunch} from "@tauri-apps/api/process";
   import {invoke} from "@tauri-apps/api/tauri";
   import LoadSpinner from "./components/LoadSpinner.svelte";
+  import ErrorModal from "./components/ErrorModal.svelte";
 
   let selected: string = "theme-darcula"
   let mcInstances: number
@@ -22,11 +23,12 @@
   let autoUpdate: boolean
   let loaderVersion: string
 
-  let installing: boolean = false
-  let updating: boolean = false
   let installModal: HTMLDialogElement
   let restartModal: HTMLDialogElement
   let updateModal: HTMLDialogElement
+
+  let installing: boolean = false
+  let updating: boolean = false
   let updateURL: string
   let updateVersion: string
   let httpClient: Client
@@ -237,6 +239,7 @@
       </button>
     </div>
   </dialog>
+  <ErrorModal/>
 </main>
 
 
