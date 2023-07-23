@@ -102,6 +102,7 @@
 
             minecraftMap.delete(process.pid)
             // relaunch process with weave
+            process.cmd = process.cmd.filter(arg => !arg.startsWith('-Dlog4j.configurationFile='))
             await invoke('relaunch_with_weave', {cwd: process.cwd, cmdLine: process.cmd})
         } catch (err) {
             console.error("Error relaunching process", err)
