@@ -1,5 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod error;
+use error::Result;
+
 use std::ffi::OsStr;
 use std::sync::{Mutex, Arc};
 use std::path::{Path, PathBuf};
@@ -50,7 +53,7 @@ struct ModConfig {
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct Analytics {
-    launch_times: [u32; 10],
+    launch_times: Vec<u32>,
     time_played: u64,
     average_launch_time: f32,
 }
@@ -61,37 +64,27 @@ struct ConsolePayload {
     pid: u32
 }
 
-fn get_weave_directory() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let mut home = home_dir().ok_or("Home directory not found")?;
-    home.push(".weave");
-    Ok(home)
+fn get_weave_directory() -> Result<PathBuf> {
+    Ok(home_dir().ok_or("Home directory not found")?.join(".weave"))
 }
 
-fn get_weave_logs_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let weave_dir = get_weave_directory()?;
-    let mut logs_dir = weave_dir.clone();
-    logs_dir.push("logs");
-
+fn get_weave_logs_path() -> Result<PathBuf> {
+    let logs_dir = get_weave_directory()?.join("logs");
     if !logs_dir.exists() {
-        fs::create_dir_all(&logs_dir)?;
+        fs::create_dir(&logs_dir)?;
     }
-
     Ok(logs_dir)
 }
 
-fn get_weave_loader_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let weave_dir = get_weave_directory()?;
-    let mut loader_path = weave_dir.clone();
-    loader_path.push("loader.jar");
-
+fn get_weave_loader_path() -> Result<PathBuf> {
+    let loader_path = get_weave_directory()?.join("loader.jar");
     if !loader_path.exists() {
-        return Err("Weave-Loader JAR file (~/.weave/loader.jar) not found".into());
+        Err("Weave-Loader JAR file (~/.weave/loader.jar) not found")?;
     }
-
     Ok(loader_path)
 }
 
-fn sha256_digest<R: Read>(mut reader: R) -> Result<Digest, Box<dyn std::error::Error>> {
+fn sha256_digest<R: Read>(mut reader: R) -> Result<Digest> {
     let mut context = Context::new(&SHA256);
     let mut buffer = [0; 1024];
 
@@ -107,35 +100,22 @@ fn sha256_digest<R: Read>(mut reader: R) -> Result<Digest, Box<dyn std::error::E
 }
 
 #[tauri::command]
-fn check_loader_integrity(sum_to_check: String) -> bool {
-    match get_weave_loader_path() {
-        Ok(weave_loader) => {
-            if let Ok(input) = File::open(&weave_loader) {
-                let reader = BufReader::new(input);
-                if let Ok(digest) = sha256_digest(reader) {
-                    let checksum = HEXUPPER.encode(digest.as_ref());
-                    return sum_to_check == checksum
-                }
-            }
-        }
-        Err(err) => {
-            // show error modal
-        }
-    }
-
-    false
+fn check_loader_integrity(sum_to_check: String) -> Result<bool> {
+    let file = File::open(get_weave_loader_path()?)?;
+    let digest = sha256_digest(file)?;
+    Ok(sum_to_check == HEXUPPER.encode(digest.as_ref()))
 }
 
 #[tauri::command]
-fn read_mod_config(path: String) -> Option<ModConfig> {
-    let f = File::open(&path).unwrap();
-    let mut archive = ZipArchive::new(f).unwrap();
+fn read_mod_config(path: String) -> Result<Option<ModConfig>> {
+    let f = File::open(&path)?;
+    let mut archive = ZipArchive::new(f)?;
     let conf = match archive.by_name("weave.mod.json") {
         Ok(conf) => conf,
-        Err(ZipError::FileNotFound) => return None,
-        Err(e) => panic!("{:?}", e)
+        Err(ZipError::FileNotFound) => return Ok(None),
+        Err(e) => Err(e)?
     };
-    Some(serde_json::from_reader(conf).unwrap())
+    Ok(serde_json::from_reader(conf)?)
 }
 
 #[tauri::command]
@@ -181,43 +161,41 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
 }
 
 #[tauri::command]
-fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) {
-    if let Ok(weave_loader_path) = get_weave_loader_path() {
-        let java_agent = String::from("-javaagent:") + &weave_loader_path.to_str().unwrap();
-        cmd_line.insert(1, java_agent);
+fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) -> Result<()> {
+    let weave_loader_path = get_weave_loader_path()?;
+    cmd_line.insert(1, format!("-javaagent:{}", weave_loader_path.to_str().unwrap()));
 
-        // piped outputs
-        let (reader, writer) = os_pipe::pipe().expect("Failed to create pipe");
+    // piped outputs
+    let (reader, writer) = os_pipe::pipe()?;
 
-        let child = Command::new(&cmd_line[0])
-            .current_dir(Path::new(&cwd))
-            .stderr(writer.try_clone().expect("Failed to clone pipe writer"))
-            .stdout(writer)
-            .args(&cmd_line[1..])
-            .spawn().expect("Failed to relaunch with Weave");
+    let child = Command::new(&cmd_line[0])
+        .current_dir(Path::new(&cwd))
+        .stderr(writer.try_clone()?)
+        .stdout(writer)
+        .args(&cmd_line[1..])
+        .spawn()?;
 
-        app_state.selected_process.compare_and_swap(0, child.id(), Ordering::Relaxed);
+    app_state.selected_process.compare_and_swap(0, child.id(), Ordering::Relaxed);
 
-        let selected_process = Arc::clone(&app_state.selected_process);
-        std::thread::spawn(move || {
-            let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
-            if let Ok(logs_path) = get_weave_logs_path() {
-                let mut log_file = File::create(logs_path.join(log_name)).expect("Failed to create log file");
-                let buf_reader = BufReader::new(reader);
+    let selected_process = Arc::clone(&app_state.selected_process);
+    let log_dir = get_weave_logs_path()?;
+    let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
+    let mut log_file = File::create(log_dir.join(log_name))?;
+    std::thread::spawn(move || {
+        let buf_reader = BufReader::new(reader);
 
-                for line in buf_reader.lines().filter_map(|l| l.ok()) {
-                    write!(log_file, "{}\n", line).expect("Failed to write output to log file");
+        for line in buf_reader.lines().filter_map(|l| l.ok()) {
+            write!(log_file, "{}\n", line).expect("Failed to write output to log file");
 
-                    if selected_process.load(Ordering::Relaxed) == child.id() {
-                        app.emit_all("console_output", ConsolePayload {
-                            line,
-                            pid: child.id()
-                        }).expect("Failed to emit console log to renderer");
-                    }
-                }
+            if selected_process.load(Ordering::Relaxed) == child.id() {
+                app.emit_all("console_output", ConsolePayload {
+                    line,
+                    pid: child.id()
+                }).expect("Failed to emit console log to renderer");
             }
-        });
-    }
+        }
+    });
+    Ok(())
 }
 
 #[tauri::command]
@@ -243,24 +221,10 @@ fn get_memory_usage(app_state: State<AppState>) -> (u64, u64) {
 }
 
 #[tauri::command]
-fn get_analytics() -> Analytics {
-    let analytics_file = get_weave_directory().unwrap().join("analytics.json");
-
-    if let Ok(file_content) = fs::read_to_string(analytics_file) {
-        if let Ok(analytics) = serde_json::from_str::<Analytics>(&file_content) {
-            return Analytics {
-                launch_times: analytics.launch_times,
-                time_played: analytics.time_played,
-                average_launch_time: analytics.average_launch_time
-            }
-        }
-    }
-
-    Analytics {
-        launch_times: [0; 10],
-        time_played: 0,
-        average_launch_time: 0.0
-    }
+fn get_analytics() -> Result<Analytics> {
+    let analytics_file = get_weave_directory()?.join("analytics.json");
+    let analytics = serde_json::from_reader(File::open(analytics_file)?)?;
+    Ok(analytics)
 }
 
 struct AppState {
