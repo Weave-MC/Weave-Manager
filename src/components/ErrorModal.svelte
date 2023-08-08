@@ -7,9 +7,11 @@
     }
 
     let errorModal: HTMLDialogElement
-    let errors: Error[] = [{title: 'Failed Relaunch', desc: 'Failed to relaunch Lunar Client with Weave'}, {title: '2', desc: '2'}]
+    let errors: Error[] = []
 
     let awaitClose: boolean = false
+
+    window.addEventListener('unhandledrejection', (e) => errors = [...errors, {title: "Weave has encountered an Error", desc: e.reason}])
 
     async function modalClicked(event) {
         const target = event.target as HTMLDialogElement
@@ -43,13 +45,13 @@
     })
 </script>
 
-<dialog bind:this={errorModal} id="error-modal" class="w-[26rem] h-[10rem] text-text" on:click={async(event) => modalClicked(event)}>
-    <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">{errors[0].title}</div>
-    <div class="w-full h-full flex flex-col items-center justify-center">
-        {#if errors.length > 0}
+<dialog bind:this={errorModal} id="error-modal" class="w-[26rem] h-[14rem] text-text" on:click={async(event) => modalClicked(event)}>
+    {#if errors.length > 0}
+        <div class="w-full h-9 border-b-2 border-overlay flex justify-center items-center">{errors[0].title}</div>
+        <div class="w-full h-full flex flex-col items-center justify-center">
             <h1>{errors[0].desc}</h1>
-        {/if}
-    </div>
+        </div>
+    {/if}
 </dialog>
 
 <style>
