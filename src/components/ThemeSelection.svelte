@@ -18,6 +18,60 @@
         classList.toggle('theme-shadow')
     }
 
+    // looks scuffed ik but better than hardcoding things
+    let themeList = [
+        {
+            id: "theme-darcula",
+            jsId: "darcula-theme",
+            name: "Darcula"
+        },
+        {
+            id: "theme-light",
+            jsId: "light-theme",
+            name: "Light"
+        },
+        {
+            id: "theme-moonlight",
+            jsId: "moonlight-theme",
+            name: "Moonlight"
+        },
+        {
+            id: "theme-purple-rain",
+            jsId: "purple-rain-theme",
+            nam: "Purple Rain"
+        },
+        {
+            id: "theme-gruvbox",
+            jsId: "gruvbox-theme",
+            name: "Gruvbox"
+        },
+        {
+            id: "theme-cat-macchiato",
+            jsId: "cat-macchiato",
+            name: "Cat Macchiato"
+        },
+        {
+            id: "theme-cat-mocha",
+            jsId: "cat-mocha",
+            name: "Cat Mocha"
+        },
+        {
+            id: "theme-cat-frappe",
+            jsId: "cat-frappe",
+            name: "Cat Frappe"
+        },
+        {
+            id: "theme-deep-ocean",
+            jsId: "deep-ocean-theme",
+            name: "Deep Ocean"
+        },
+        {
+            id: "theme-amoled",
+            jsId: "amoled-theme",
+            name: "Amoled"
+        }
+    ]
+
     function clickedOutside() {
         if (open)
             toggleThemeSelector()
@@ -30,36 +84,11 @@
 
 <div id="theme-selection" class="relative w-7 h-7 bg-crust overflow-hidden rounded-lg" use:clickOutside on:click_outside={clickedOutside}>
     <div id="selections" class="absolute w-48 h-72 pt-8 flex flex-col justify-around">
-        <div id="darcula-theme" class="theme" on:click={() => selectTheme('theme-darcula')}>
-            <h1>Darcula</h1>
-        </div>
-        <div id="light-theme" class="theme" on:click={() => selectTheme('theme-light')}>
-            <h1>Light</h1>
-        </div>
-        <div id="moonlight-theme" class="theme" on:click={() => selectTheme('theme-moonlight')}>
-            <h1>Moonlight</h1>
-        </div>
-        <div id="purple-rain-theme" class="theme" on:click={() => selectTheme('theme-purple-rain')}>
-            <h1>Purple Rain</h1>
-        </div>
-        <div id="gruvbox-theme" class="theme" on:click={() => selectTheme('theme-gruvbox')}>
-            <h1>Gruvbox</h1>
-        </div>
-        <div id="cat-macchiato" class="theme" on:click={() => selectTheme('theme-cat-macchiato')}>
-            <h1>Cat Macchiato</h1>
-        </div>
-        <div id="cat-mocha" class="theme" on:click={() => selectTheme('theme-cat-mocha')}>
-            <h1>Cat Mocha</h1>
-        </div>
-        <div id="cat-frappe" class="theme" on:click={() => selectTheme('theme-cat-frappe')}>
-            <h1>Cat Frappé</h1>
-        </div>
-        <div id="deep-ocean-theme" class="theme" on:click={() => selectTheme('theme-deep-ocean')}>
-            <h1>Deep Ocean</h1>
-        </div>
-        <div id="amoled-theme" class="theme" on:click={() => selectTheme('theme-amoled')}>
-            <h1>Amoled</h1>
-        </div>
+        {#each themeList as obj}
+            <div id={obj.jsId} class="theme" on:click={() => selectTheme(obj.id)}>
+                <h1>{obj.name}</h1>
+            </div>
+        {/each}
     </div>
     <div id="title" class="absolute w-48 h-8 pl-3 flex items-center border-b-2 b border-overlay">
         <h1>Theme Selection</h1>
