@@ -25,7 +25,7 @@
       },
       "shell": {
         "all": false,
-        "open": true
+        "open": ""
       },
       "fs": {
         "exists": true,
@@ -62,7 +62,8 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico",
-        "icons/weave-icon.png"
+        "icons/weave-icon.png",
+        "icons/Frame 26.png"
       ],
       "identifier": "net.weavemc.manager",
       "longDescription": "",
@@ -94,7 +95,7 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI0M0NFOEI0NzdEREREOTUKUldTVjNkMTN0T2c4Sko3OGl6VGUxYkc4M2FzUFVoZFphZEtZaEVkWWphM0l6bzUzVzN4Z1cwVlMK"
     },
     "systemTray": {
-      "iconPath": "icons/weave-icon.png"
+      "iconPath": "icons/Frame 26.png"
     },
     "windows": [
       {
