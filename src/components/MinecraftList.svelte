@@ -135,8 +135,8 @@
 
     onMount(() => {
         getMinecraftProcesses()
-        processInterval = setInterval(() => {
-            getMinecraftProcesses()
+        processInterval = setInterval(async () => {
+            await getMinecraftProcesses()
         }, 1000)
     });
 
@@ -161,13 +161,12 @@
                     <p class="absolute right-4">{calculateRuntime(process.start_time)}</p>
                     <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
                         <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
-<!--                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>-->
-                        {#if !$shiftDown}
-                            <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
+                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+                        {#if process.weave_attached}
+                            <button class="process-button" on:click={async() => await showConsole(process.pid)}>Console</button>
                         {:else}
-                            <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+                            <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
                         {/if}
-                        <button class="process-button" on:click={async() => await showConsole(process.pid)}>Console</button>
                     </div>
                 </div>
             {/each}
