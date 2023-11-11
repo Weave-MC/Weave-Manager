@@ -152,4 +152,14 @@
     .modal-mod-info-item {
         @apply w-1/2 text-center text-sm;
     }
+
+    ::-webkit-scrollbar {
+        @apply w-1;
+    }
+    ::-webkit-scrollbar-track {
+        @apply bg-none;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-overlay rounded-xl;
+    }
 </style>
