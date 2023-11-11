@@ -59,9 +59,9 @@ struct Analytics {
 }
 
 #[derive(Clone, Serialize)]
-struct ConsolePayload {
+struct ConsolePayload<'a> {
     line: String,
-    pid: u32
+    file_path: &'a String
 }
 
 fn get_weave_directory() -> Result<PathBuf> {
@@ -175,13 +175,14 @@ fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<
         .args(&cmd_line[1..])
         .spawn()?;
 
-    app_state.selected_process.compare_and_swap(0, child.id(), Ordering::Relaxed);
+    app_state.selected_process.store(child.id(), Ordering::Relaxed);
 
     let selected_process = Arc::clone(&app_state.selected_process);
     let log_dir = get_weave_logs_path()?;
     let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
-    let mut log_file = File::create(log_dir.join(log_name))?;
     std::thread::spawn(move || {
+        let log_path = log_dir.join(log_name);
+        let mut log_file = File::create(&log_path).expect("Failed to create log file");
         let buf_reader = BufReader::new(reader);
 
         for line in buf_reader.lines().filter_map(|l| l.ok()) {
@@ -190,7 +191,7 @@ fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<
             if selected_process.load(Ordering::Relaxed) == child.id() {
                 app.emit_all("console_output", ConsolePayload {
                     line,
-                    pid: child.id()
+                    file_path: &log_path.display().to_string()
                 }).expect("Failed to emit console log to renderer");
             }
         }
