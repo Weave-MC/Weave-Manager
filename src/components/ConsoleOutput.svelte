@@ -2,9 +2,10 @@
     import {listen} from '@tauri-apps/api/event'
     import {onMount} from "svelte";
     import LoadSpinner from "./LoadSpinner.svelte";
+    import {shell} from "@tauri-apps/api";
 
     let output: string[] = []
-    let currentPid: number = 0
+    let currentLogFile: string = ""
 
     let switchingConsole: boolean = false
 
@@ -12,12 +13,17 @@
         switchingConsole = true
     }
 
+    async function openLogFile() {
+        await shell.open(currentLogFile)
+    }
+
     onMount(async () => {
         await listen('console_output', (event) => {
-            const {line, pid} = event.payload
+            const {line, file_path} = event.payload
 
-            if (currentPid != pid) {
-                currentPid = pid
+            if (currentLogFile != file_path) {
+                console.log(file_path)
+                currentLogFile = file_path
                 output = []
                 switchingConsole = false
             }
@@ -28,8 +34,13 @@
 </script>
 
 <div id="console-output" class="w-full h-full">
-    <div id="console-output-title" class="w-full h-8 flex justify-center items-center border-b-2 border-overlay">
+    <div id="console-output-title" class="relative w-full h-8 flex justify-center items-center border-b-2 border-overlay">
         <h1 class="absolute">Console Output</h1>
+        {#if currentLogFile.length > 0}
+            <div class="flex justify-end px-2 cursor-pointer" on:click={async() => await openLogFile()}>
+                <i class="fa-solid fa-up-right-from-square"></i>
+            </div>
+        {/if}
         <div class="w-full flex justify-end px-2">
             <i class="fa-solid fa-terminal"></i>
         </div>
