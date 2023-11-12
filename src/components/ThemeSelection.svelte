@@ -60,6 +60,9 @@
         <div id="amoled-theme" class="theme" on:click={() => selectTheme('theme-amoled')}>
             <h1>Amoled</h1>
         </div>
+        <div id="halloween-theme" class="theme" on:click={() => selectTheme('theme-halloween')}>
+            <h1>Halloween</h1>
+        </div>
     </div>
     <div id="title" class="absolute w-48 h-8 pl-3 flex items-center border-b-2 b border-overlay">
         <h1>Theme Selection</h1>

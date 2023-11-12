@@ -103,4 +103,14 @@
         --color-enabled: #a6d189;
         --color-accent: #eebebe;
     }
+    .theme-halloween {
+        --color-crust: #0a0a0a;
+        --color-base: #e77f1e;
+        --color-surface: #000000;
+        --color-overlay: #462d12;
+        --color-text: #ffffff;
+        --color-disabled: #b8272a;
+        --color-enabled: #74d136;
+        --color-accent: #8c00ff;
+    }
 }
