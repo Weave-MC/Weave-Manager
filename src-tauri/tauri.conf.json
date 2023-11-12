@@ -57,13 +57,8 @@
       },
       "externalBin": [],
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
         "icons/icon.ico",
-        "icons/weave-icon.png",
-        "icons/Frame 26.png"
+        "icons/icon.svg"
       ],
       "identifier": "net.weavemc.manager",
       "longDescription": "",
@@ -95,7 +90,7 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI0M0NFOEI0NzdEREREOTUKUldTVjNkMTN0T2c4Sko3OGl6VGUxYkc4M2FzUFVoZFphZEtZaEVkWWphM0l6bzUzVzN4Z1cwVlMK"
     },
     "systemTray": {
-      "iconPath": "icons/Frame 26.png"
+      "iconPath": "icons/icon.ico"
     },
     "windows": [
       {
