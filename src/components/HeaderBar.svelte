@@ -1,6 +1,6 @@
 <script lang="ts">
     import { appWindow } from '@tauri-apps/api/window'
-    import weaveIcon from '../../src-tauri/icons/icon.svg'
+    import weaveIcon from '../../src-tauri/icons/icon.png'
     import ThemeSelection from "./ThemeSelection.svelte"
 
     function minimize() {
