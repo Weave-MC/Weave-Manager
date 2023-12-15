@@ -58,8 +58,7 @@
       "externalBin": [],
       "icon": [
         "icons/icon.ico",
-        "icons/icon.svg",
-        "icons/icon.icns"
+        "icons/icon.svg"
       ],
       "identifier": "net.weavemc.manager",
       "longDescription": "",
