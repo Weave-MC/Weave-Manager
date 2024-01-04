@@ -129,8 +129,9 @@ fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstanc
                 return None
             }
 
+            #[cfg(not(target_os = "macos"))]
             if !proc.cmd().iter().any(|arg| arg.contains(".minecraft")) {
-                return None
+                return None;
             }
 
             let client_type = if proc.cmd().iter().any(|arg| arg.contains("lunar")) {

@@ -1,6 +1,6 @@
 use std::io;
 use serde::Serializer;
-// a
+
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(thiserror::Error, Debug)]
