@@ -35,7 +35,13 @@
         "readDir": true,
         "copyFile": true,
         "createDir": true,
-        "scope": ["$HOME/**"]
+        "scope": [
+          "$HOME/.weave/mods/**",
+          "$HOME/.weave/mods",
+          "$HOME/.weave/manager.json",
+          "$HOME/.weave/analytics.json",
+          "$HOME/.weave/loader.jar"
+        ]
       },
       "path": {
         "all": true
@@ -58,7 +64,8 @@
       "externalBin": [],
       "icon": [
         "icons/icon.ico",
-        "icons/icon.svg"
+        "icons/icon.svg",
+        "icons/icon.icns"
       ],
       "identifier": "net.weavemc.manager",
       "longDescription": "",
