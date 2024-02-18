@@ -1,11 +1,11 @@
 [package]
-name = "app"
+name = "weave-manager"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Manager for Weave software and launching"
+authors = ["exejar", "nils"]
 license = ""
 repository = ""
-default-run = "app"
+default-run = "weave-manager"
 edition = "2021"
 rust-version = "1.60"
 

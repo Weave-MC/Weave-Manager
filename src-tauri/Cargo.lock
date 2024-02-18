@@ -72,26 +72,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
 
 [[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "data-encoding",
- "lazy_static",
- "os_pipe",
- "ring",
- "serde",
- "serde_json",
- "sysinfo",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-fs-watch",
- "thiserror",
- "zip",
-]
-
-[[package]]
 name = "atk"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3885,6 +3865,26 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "weave-manager"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "data-encoding",
+ "lazy_static",
+ "os_pipe",
+ "ring",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-fs-watch",
+ "thiserror",
+ "zip",
 ]
 
 [[package]]

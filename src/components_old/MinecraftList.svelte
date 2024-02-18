@@ -2,7 +2,7 @@
     import {onDestroy, onMount, createEventDispatcher} from "svelte"
     import {invoke} from "@tauri-apps/api/tauri"
     import { appWindow } from "@tauri-apps/api/window"
-    import {shiftDown} from "../key-stores";
+    import {shiftDown} from "../scripts/key-stores";
 
     enum MinecraftType {
         LunarClient = "Lunar",
@@ -160,12 +160,12 @@
                     <p>{process.version}</p>
                     <p class="absolute right-4">{calculateRuntime(process.start_time)}</p>
                     <div class="process-buttons w-full h-full absolute top-0 left-0 px-1 py-1 flex flex-row justify-around items-center bg-overlay opacity-0">
-                        <button class="process-button" on:click={() => showInfoModal(process)}>Info</button>
-                        <button class="process-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
+                        <button class="icon-button" on:click={() => showInfoModal(process)}>Info</button>
+                        <button class="icon-button" on:click={async() => await killProcess(process.pid)}>Kill</button>
                         {#if process.weave_attached}
-                            <button class="process-button" on:click={async() => await showConsole(process.pid)}>Console</button>
+                            <button class="icon-button" on:click={async() => await showConsole(process.pid)}>Console</button>
                         {:else}
-                            <button class="process-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
+                            <button class="icon-button" on:click={async() => await relaunchWithWeave(process)}>Relaunch</button>
                         {/if}
                     </div>
                 </div>
@@ -294,7 +294,7 @@
     .process-buttons {
         transition: opacity 0.1s;
     }
-    .process-button {
+    .icon-button {
         @apply w-[30%] h-full bg-surface rounded-xl flex items-center justify-center text-sm font-semibold;
     }
     ::-webkit-scrollbar {

@@ -25,7 +25,7 @@
       },
       "shell": {
         "all": false,
-        "open": ""
+        "open": true
       },
       "fs": {
         "exists": true,
@@ -95,8 +95,8 @@
     "windows": [
       {
         "title": "Weave Manager",
-        "width": 800,
-        "height": 600,
+        "width": 900,
+        "height": 650,
         "fullscreen": false,
         "resizable": false,
         "decorations": false

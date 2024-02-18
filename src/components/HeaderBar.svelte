@@ -1,7 +1,6 @@
 <script lang="ts">
     import { appWindow } from '@tauri-apps/api/window'
-    import weaveIcon from '../../src-tauri/icons/icon.png'
-    import ThemeSelection from "./ThemeSelection.svelte"
+    import weaveIcon from '../weave-icon.png'
 
     function minimize() {
         appWindow.minimize()
@@ -12,27 +11,31 @@
     }
 </script>
 
-<div data-tauri-drag-region id="titlebar" class="relative text-xl w-full bg-crust h-10 flex items-center pl-3 gap-3">
-    <div id="header-buttons" class="absolute right-0 h-10 flex justify-end gap-2 p-1.5">
-        <ThemeSelection on:select_theme/>
-        <button class="button hover:bg-overlay" on:click={minimize}>
+<div data-tauri-drag-region id="header-bar" class="fixed text-xl w-full bg-base h-14 flex items-center">
+    <div id="header-buttons" class="absolute right-0 flex justify-end gap-3 p-3">
+        <button class="button bg-surface hover:bg-overlay" on:click={minimize}>
             <i class="fa-solid fa-minus"></i>
         </button>
-        <button class="button hover:bg-disabled" on:click={hide}>
+        <button class="button bg-surface hover:bg-disabled" on:click={hide}>
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
-    <img src="{weaveIcon}" id="weave-icon" class="w-7 h-7" alt="Weave Icon">
-    <h1>Weave Manager</h1>
+    <div id="weave-icon-wrapper" class="w-14 h-14 flex justify-center items-center">
+        <img src="{weaveIcon}" id="weave-icon" class="w-11 h-11 m-auto" alt="Weave Icon">
+    </div>
+    <div id="title" class="relative left-5 flex flex-row gap-1.5 items-baseline font-normal">
+        <h1 class="text-2xl">Weave Manager</h1>
+        <p class="text-xl text-overlay">v1.0.0</p>
+    </div>
 </div>
 
 <style>
-    #titlebar {
+    #header-bar {
         z-index: 1;
     }
 
     .button {
-        @apply h-7 aspect-square text-lg transition-colors duration-300 rounded;
+        @apply h-8 aspect-square text-xl transition-colors duration-300 rounded;
         -webkit-app-region: no-drag;
     }
 </style>
