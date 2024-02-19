@@ -106,7 +106,7 @@
                         <h1 class="w-[33%] text-center">{mcProcess.info.client}</h1>
                         <h1 class="w-[33%] text-end">{mcProcess.info.version}</h1>
                     </div>
-                    <div class="h-full flex flex-row justify-between items-center  px-2 gap-2"> <!-- border-l-2 border-overlay -->
+                    <div class="h-full flex flex-row justify-between items-center px-2 gap-2"> <!-- border-l-2 border-overlay -->
                         <button class="icon-button" on:click={async() => killProcess(mcProcess.pid)}>
                             <i class="fa-solid fa-skull"></i>
                         </button>
@@ -133,11 +133,16 @@
                 <h1>Console Output</h1>
             </div>
 
-            <div id="console-container" class="absolute bg-crust rounded-lg top-10 bottom-2 left-2 right-2 break-words">
-                <div id="target-process" class="relative left-0 top-0 w-full h-6 bg-overlay rounded-t-lg">
-                    <h1>Process: Lunar - 5728</h1>
+            <div id="console-container" class="absolute bg-crust rounded-lg top-10 bottom-2 left-2 right-2 break-words py-2 pl-2 pr-1">
+                <div id="target-process-container" class="w-full h-6 flex items-center pr-1 gap-2">
+                    <div class="px-2 h-full bg-overlay rounded">
+                        <h1>PName: Lunar</h1>
+                    </div>
+                    <div class="px-2 h-full bg-overlay rounded">
+                        <h1>PID: 5728</h1>
+                    </div>
                 </div>
-                <div id="console-content" class="absolute top-7 bottom-1 left-2 right-1 overflow-y-scroll gap-2 pr-1 text-sm">
+                <div id="console-content" class="absolute top-9 bottom-2 left-2 right-1 overflow-y-scroll gap-2 pr-1 text-sm text-start">
                     {longString}
                 </div>
             </div>
