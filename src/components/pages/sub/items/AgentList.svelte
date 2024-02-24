@@ -1,6 +1,7 @@
 <script lang="ts">
     import type {Agent} from "../../../../scripts/types"
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
+    import ButtonBar from "../../../util/ButtonBar.svelte";
 
     const agentList: Agent[] = [
         {filePath: "", fileName: "Agent 1", disabled: false},
@@ -31,23 +32,16 @@
         <h1>Agents</h1>
     </div>
     <VerticalScroll columns={1} items={agentList.sort(agentListCompare)} let:prop={agent}>
-        <div class="{agent.disabled ? 'bg-base' : 'bg-surface'} relative w-full h-[2.5rem] rounded-lg flex justify-between items-center overflow-clip p-2">
-            <div class="w-full h-full left-2 flex justify-start gap-2 items-center">
+        <div class="w-full h-[2.75rem] rounded-lg flex items-center justify-between p-2 {agent.disabled ? 'bg-base' : 'bg-surface'}">
+            <div class="h-full flex items-center gap-2">
                 <h1 class="text-lg">{agent.fileName}</h1>
                 {#if agent.disabled}
                     <h1 class="text-disabled">Un-Linked</h1>
                 {/if}
             </div>
-            <div class="tooltip absolute h-9 right-12 p-2 bg-overlay rounded-lg flex justify-center items-center opacity-0">
-                {agent.disabled ? 'Link' : 'Un-Link'}
-            </div>
-            <button id="state" class="w-8 h-7 bg-overlay rounded-lg {agent.disabled ? 'disabled' : 'enabled'}" on:click={() => toggleAgent(agent)}>
-                {#if agent.disabled}
-                    <i class="fa-solid fa-link-slash"></i>
-                {:else}
-                    <i class="fa-solid fa-link"></i>
-                {/if}
-            </button>
+            <ButtonBar buttons={[
+                {label: agent.disabled ? "Link Agent" : "Un-Link Agent", action: () => toggleAgent(agent), icon: agent.disabled ? "fa-solid fa-link-slash" : "fa-solid fa-link"}
+            ]}/>
         </div>
     </VerticalScroll>
 </div>

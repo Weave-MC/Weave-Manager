@@ -1,6 +1,7 @@
 <script lang="ts">
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import {ModProfile} from "../../../../scripts/types";
+    import ButtonBar from "../../../util/ButtonBar.svelte";
 
     const modProfiles: ModProfile[] = [
         new ModProfile("Profile 1", [{name: "Seraph", description: "Statistic Mod for Hypixel", version: "1.0.0", authors: ["exejar"], filePath: "", fileName: "Seraph-1.0.0", disabled: false}]),
@@ -29,28 +30,17 @@
         <h1>Mod Profiles</h1>
     </div>
     <VerticalScroll columns={1} items={modProfiles} let:prop={profile}>
-        <div class="w-full h-[3.25rem] bg-surface rounded-lg flex items-center justify-between p-2">
+        <div class="w-full h-[3rem] bg-surface rounded-lg flex items-center justify-between p-2">
             <div id="profile-info" class="h-full flex items-center gap-2">
                 <h1>{profile.name}</h1>
             </div>
             <div id="buttons" class="h-full flex items-center gap-2">
-                <button id="load-profile" class="icon-button" on:click={() => loadProfile(profile)}>
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                </button>
-                <button id="save-profile" class="icon-button" on:click={() => saveProfile(profile)}>
-                    <i class="fa-solid fa-floppy-disk"></i>
-                </button>
-                <button id="profile-info" class="icon-button" on:click={() => profileInfo(profile)}>
-                    <i class="fa-solid fa-info"></i>
-                </button>
+                <ButtonBar class="gap-2" buttons={[
+                    {label: "Load Profile", action: () => loadProfile(profile), icon: "fa-solid fa-arrow-right-from-bracket"},
+                    {label: "Save Profile", action: () => saveProfile(profile), icon: "fa-solid fa-floppy-disk"},
+                    {label: "Profile Info", action: () => profileInfo(profile), icon: "fa-solid fa-info"}
+                ]}/>
             </div>
         </div>
     </VerticalScroll>
 </div>
-
-<style>
-    .icon-button {
-        @apply w-8 h-8 bg-overlay rounded;
-        font-size: 1rem;
-    }
-</style>

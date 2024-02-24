@@ -1,6 +1,8 @@
 <script lang="ts">
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import type {MinecraftProcess} from "../../../../scripts/types";
+    import ButtonBar from "../../../util/ButtonBar.svelte";
+    import {createLaunchProfile, showProcessInfo} from "../../../../scripts/shared";
 
     const history: MinecraftProcess[] = [
         {pid: 5728, info: {client: 'Lunar', cwd: 'dummy', cmd: 'dummy', version: '1.8.9'}},
@@ -24,26 +26,15 @@
         <h1>History</h1>
     </div>
     <VerticalScroll items={history} let:prop={process}>
-        <div class="relative bg-surface w-full h-[2.5rem] rounded-lg flex justify-between items-center p-2">
-            <div id="process-info" class="w-[65%] h-full flex gap-2 items-center justify-between">
+        <div class="bg-surface w-full h-[2.5rem] rounded-lg flex justify-between items-center p-2 gap-5">
+            <div id="process-info" class="w-full h-full flex gap-2 items-center justify-between">
                 <h1>{process.info.client}</h1>
                 <h1>{process.info.version}</h1>
             </div>
-            <div id="process-buttons" class="h-full flex gap-2 items-center">
-                <button id="save-profile" class="icon-button">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-                <button id="process-info" class="icon-button">
-                    <i class="fa-solid fa-info"></i>
-                </button>
-            </div>
+            <ButtonBar class="gap-2" buttons={[
+                {label: "Create Launch Profile", action: () => createLaunchProfile(process), icon: "fa-solid fa-plus"},
+                {label: "Process Info", action: () => showProcessInfo(process), icon: "fa-solid fa-info"}
+            ]}/>
         </div>
     </VerticalScroll>
 </div>
-
-<style>
-    .icon-button {
-        @apply w-7 h-7 bg-overlay rounded;
-        font-size: 1rem;
-    }
-</style>

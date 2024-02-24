@@ -1,6 +1,8 @@
 <script lang="ts">
     import type {MinecraftProcess} from "../../../../scripts/types";
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
+    import {createLaunchProfile, showProcessInfo} from "../../../../scripts/shared";
+    import ButtonBar from "../../../util/ButtonBar.svelte";
 
     // <pid, MinecraftProcess>
     let processMap = new Map<number, MinecraftProcess>([
@@ -15,45 +17,25 @@
     async function killProcess(pid: number) {
 
     }
-
-    async function showProcessInfo(mcProcess: MinecraftProcess) {
-
-    }
-
-    async function createLaunchProfile(mcProcess: MinecraftProcess) {
-
-    }
 </script>
 
-<div id="minecraft-processes" class="relative w-full h-[60%] bg-surface rounded-xl overflow-clip p-2">
-    <div class="w-full h-8 text-center">
+<div id="minecraft-processes" class="relative w-full h-full bg-surface rounded-xl p-2">
+    <div class="relative w-full text-center">
         <h1>Minecraft Processes</h1>
     </div>
     <VerticalScroll columns={1} items={[...processMap.values()]} let:prop={mcProcess}>
-        <div class="bg-surface w-full h-[3.25rem] rounded-lg text-lg text-center flex justify-between overflow-clip py-2">
-            <div class="h-full w-full flex flex-row justify-between items-center px-2">
+<!--        bg-surface w-full h-[3rem] rounded-lg text-lg text-center flex justify-between overflow-clip py-2-->
+        <div class="w-full h-[3rem] rounded-lg flex gap-5 items-center justify-between p-2 bg-surface">
+            <div class="h-full w-full flex flex-row justify-between items-center">
                 <h1 class="w-[33%] text-start">{mcProcess.pid}</h1>
                 <h1 class="w-[33%] text-center">{mcProcess.info.client}</h1>
                 <h1 class="w-[33%] text-end">{mcProcess.info.version}</h1>
             </div>
-            <div class="h-full flex flex-row justify-between items-center px-2 gap-2"> <!-- border-l-2 border-overlay -->
-                <button class="icon-button" on:click={async() => killProcess(mcProcess.pid)}>
-                    <i class="fa-solid fa-skull"></i>
-                </button>
-                <button class="icon-button" on:click={async() => createLaunchProfile(mcProcess)}>
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-                <button class="icon-button" on:click={async() => showProcessInfo(mcProcess)}>
-                    <i class="fa-solid fa-info"></i>
-                </button>
-            </div>
+            <ButtonBar class="gap-2" buttons={[
+                {label: "Kill Process", action: () => killProcess(mcProcess.pid), icon: "fa-solid fa-skull"},
+                {label: "Create Launch Profile", action: () => createLaunchProfile(mcProcess), icon: "fa-solid fa-plus"},
+                {label: "Process Info", action: () => showProcessInfo(mcProcess), icon: "fa-solid fa-info"}
+            ]}/>
         </div>
     </VerticalScroll>
 </div>
-
-<style>
-    .icon-button {
-        @apply w-8 h-8 bg-overlay rounded;
-        font-size: 1rem;
-    }
-</style>

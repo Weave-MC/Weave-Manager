@@ -73,3 +73,9 @@ export interface MinecraftInfo {
     cmd: string
     cwd: string
 }
+
+export interface OptionButton {
+    label: string
+    icon: string
+    action: () => void
+}
