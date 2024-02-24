@@ -4,7 +4,7 @@
 
     export let buttons: OptionButton[]
 
-    let compact: boolean = false
+    let compact: boolean = true
     let dropdownVisible: boolean
 
     function toggleCompactDropdown() {
@@ -16,7 +16,7 @@
 </script>
 
 {#if compact}
-    <button class="relative w-full h-full cursor-pointer text-text" on:click={toggleCompactDropdown} use:clickOutside on:click_outside={handleClickOutside}>
+    <button class="relative h-full cursor-pointer text-text" on:click={toggleCompactDropdown} use:clickOutside on:click_outside={handleClickOutside}>
         <i class="fa-solid fa-ellipsis-vertical"></i>
         <div class="relative flex justify-end">
             <div id="dropdown" class="fixed flex flex-col opacity-0 bg-overlay z-10 rounded-lg invisible" class:dropdownVisible={dropdownVisible}>
