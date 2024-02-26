@@ -33,18 +33,18 @@
     </div>
     <VerticalScroll columns={2} items={Array.from(profileMap.values())} let:prop={profile}>
         <div id="profile-entry" class="relative bg-surface w-full h-full rounded-lg text-lg p-2 grid">
-            <button id="profile-delete" class="icon-button absolute top-1 right-2" on:click={() => deleteProfile(profile)}>
+            <button id="profile-delete" class="absolute top-1 right-3" on:click={() => deleteProfile(profile)}>
                 <i class="fa-solid fa-trash"></i>
             </button>
 
-            <h1 class="font-semibold flex justify-center items-start leading-[100%]">{profile.name}</h1>  <!-- border-b-2 border-overlay -->
-            <h1 class="text-[1rem] flex justify-center items-center">{profile.mcInfo.client} {profile.mcInfo.version}</h1>
-            <div id="profile-buttons" class="text-[1rem] flex justify-center items-end gap-2">
-                <button class="bg-overlay rounded h-8 w-24" on:click={() => launchProfile(profile)}>
+            <h1 class="font-semibold flex justify-center items-start text-ellipsis">{profile.name}</h1>  <!-- border-b-2 border-overlay -->
+            <h1 class="text-[1rem] flex justify-center items-center text-ellipsis">{profile.mcInfo.client} {profile.mcInfo.version}</h1>
+            <div id="profile-buttons" class="text-[1rem] flex justify-center items-end">
+                <button class="bg-overlay rounded-l-lg h-8 w-24" on:click={() => launchProfile(profile)}>
                     <i class="fa-solid fa-play mr-2"></i>
                     Launch
                 </button>
-                <button class="icon-button" on:click={() => profileSettings(profile)}>
+                <button class="bg-overlay h-8 px-2 rounded-r-lg border-l-2 border-surface" on:click={() => profileSettings(profile)}>
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
