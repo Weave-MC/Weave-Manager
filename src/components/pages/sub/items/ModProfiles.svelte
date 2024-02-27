@@ -34,13 +34,11 @@
             <div id="profile-info" class="h-full flex items-center gap-2">
                 <h1>{profile.name}</h1>
             </div>
-            <div id="buttons" class="h-full flex items-center gap-2">
-                <ButtonBar class="gap-2" buttons={[
-                    {label: "Load Profile", action: () => loadProfile(profile), icon: "fa-solid fa-arrow-right-from-bracket"},
-                    {label: "Save Profile", action: () => saveProfile(profile), icon: "fa-solid fa-floppy-disk"},
-                    {label: "Profile Info", action: () => profileInfo(profile), icon: "fa-solid fa-info"}
-                ]}/>
-            </div>
+            <ButtonBar class="gap-2" name={profile.name} buttons={[
+                {label: "Load Profile", action: () => loadProfile(profile), icon: "fa-solid fa-arrow-right-from-bracket"},
+                {label: "Save Profile", action: () => saveProfile(profile), icon: "fa-solid fa-floppy-disk"},
+                {label: "Profile Info", action: () => profileInfo(profile), icon: "fa-solid fa-info"}
+            ]}/>
         </div>
     </VerticalScroll>
 </div>
