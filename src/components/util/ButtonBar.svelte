@@ -1,8 +1,12 @@
 <script lang="ts">
     import type {OptionButton} from "../../scripts/types";
     import {clickOutside} from "../../scripts/click-outside";
+    import {afterUpdate, beforeUpdate, onMount, tick} from "svelte";
 
     export let buttons: OptionButton[]
+    export let name: string
+
+    let dropdown: HTMLElement
 
     let compact: boolean = true
     let dropdownVisible: boolean
@@ -13,16 +17,26 @@
     function handleClickOutside() {
         dropdownVisible = false
     }
+
+    // TODO this is terrible, I have no idea what I should do instead though
+    function moveToParent() {
+        const parent = dropdown.parentElement
+        dropdown.style.top = parent.getBoundingClientRect().top + "px"
+    }
+
+    afterUpdate(async () => {
+        moveToParent()
+    })
 </script>
 
 {#if compact}
-    <button class="relative h-full cursor-pointer text-text" on:click={toggleCompactDropdown} use:clickOutside on:click_outside={handleClickOutside}>
+    <button class="cursor-pointer text-text w-4" on:click={toggleCompactDropdown} use:clickOutside on:click_outside={handleClickOutside}>
         <i class="fa-solid fa-ellipsis-vertical"></i>
-        <div class="relative flex justify-end">
-            <div id="dropdown" class="fixed flex flex-col opacity-0 bg-overlay z-10 rounded-lg invisible" class:dropdownVisible={dropdownVisible}>
+        <div bind:this={dropdown} class="fixed flex justify-end z-10">
+            <div id="dropdown" class="absolute bg-overlay rounded-lg flex flex-col whitespace-nowrap max-w-[10rem] overflow-clip invisible opacity-0" class:dropdownVisible={dropdownVisible}>
                 {#each buttons as button}
                     <button class="option-button flex justify-center items-center p-2" on:click={button.action}>
-                        <h1 class="m-0">{button.label}</h1>
+                        <h1>{button.label}</h1>
                         <slot prop={button}/>
                     </button>
                 {/each}
@@ -57,12 +71,12 @@
         opacity: 100%;
     }
     .option-button {
-        transition: background-color 50ms linear;
+        transition: background-color 25ms linear;
     }
     .option-button:hover {
         @apply bg-surface;
     }
     #dropdown {
-        transition: visibility 0s, opacity 150ms;
+        transition: visibility 150s, opacity 150ms;
     }
 </style>
