@@ -4,7 +4,6 @@
     import {scroll} from "./VerticalScroll.svelte";
 
     export let buttons: OptionButton[]
-    export let name: string
 
     let dropdown: HTMLElement
     let cozyButtons: HTMLElement
