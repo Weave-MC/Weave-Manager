@@ -10,7 +10,7 @@ use std::process::Command;
 use std::fs;
 use std::env;
 use std::io::{BufRead, BufReader, Read, Write};
-use std::fs::File;
+use std::fs::{File, read_dir, rename};
 use std::sync::atomic::{AtomicU32, Ordering};
 use serde::{Serialize, Deserialize};
 use serde_json;
@@ -26,31 +26,53 @@ use tauri::api::path::home_dir;
 use data_encoding::HEXUPPER;
 use ring::digest::{Context, Digest, SHA256};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 enum ClientType {
-    LunarClient,
+    Lunar,
     Forge,
-    Vanilla
+    Labymod,
+    Vanilla,
+    Badlion,
+    Feather
 }
-
 #[derive(Serialize)]
-struct MinecraftInstance {
+struct MinecraftProcess {
     pid: u32,
-    cmd: Vec<String>,
-    cwd: String,
-    version: String,
     start_time: u64,
-    client_type: ClientType,
+    info: MinecraftInfo,
     weave_attached: bool
 }
-
+#[derive(Serialize, Deserialize)]
+struct MinecraftInfo {
+    client: ClientType,
+    version: String,
+    cmd: Vec<String>,
+    cwd: String
+}
+#[derive(Serialize, Deserialize)]
+struct ModProfile {
+    name: String, // names must be unique
+    mods: Vec<ModProfileEntry>
+}
+#[derive(Serialize, Deserialize)]
+struct ModProfileEntry {
+    config: Option<ModConfig>,
+    file_name: String // path is scoped in ~/.weave/mods
+}
 #[derive(Serialize, Deserialize)]
 struct ModConfig {
-    name: Option<String>,
-    author: Option<String>,
-    version: Option<String>,
-    link: Option<String>,
+    name: String,
+    version: String,
+    description: String,
+    authors: Vec<String>
 }
+#[derive(Serialize, Deserialize)]
+struct LaunchProfile {
+    name: String,
+    mc_info: MinecraftInfo,
+    mod_profile: Option<ModProfile>
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct Analytics {
     launch_times: Vec<u32>,
@@ -119,67 +141,118 @@ fn read_mod_config(path: String) -> Result<Option<ModConfig>> {
 }
 
 #[tauri::command]
-fn fetch_minecraft_instances(app_state: State<AppState>) -> Vec<MinecraftInstance> {
+fn fetch_minecraft_processes(app_state: State<AppState>) -> Vec<MinecraftProcess> {
     let mut system = app_state.system.lock().unwrap();
-    system.refresh_processes_specifics(ProcessRefreshKind::new());
+    system.refresh_processes_specifics(ProcessRefreshKind::new()); // refresh processes
 
     system.processes().values()
         .filter_map(|proc| {
+            // If there are no java processes, return None
             if !matches!(proc.exe().file_name().and_then(OsStr::to_str), Some("javaw.exe" | "java")) {
                 return None
             }
 
+            // Rudimentary check for if the process is Minecraft
             if !proc.cmd().iter().any(|arg| arg.contains(".minecraft")) {
                 return None
             }
 
-            let client_type = if proc.cmd().iter().any(|arg| arg.contains("lunar")) {
-                ClientType::LunarClient
-            } else if proc.cmd().iter().any(|arg| arg.contains("minecraftforge")) {
-                ClientType::Forge
-            } else {
-                ClientType::Vanilla
-            };
+            // Determine the client type via command line arguments
+            let mut client_type = ClientType::Vanilla;
+            for arg in proc.cmd().iter() {
+                if arg.contains("lunar") {
+                    client_type = ClientType::Lunar;
+                    break;
+                } else if arg.contains("forge") {
+                    client_type = ClientType::Forge;
+                    break;
+                } else if arg.contains("labymod") {
+                    client_type = ClientType::Labymod;
+                    break;
+                }
+            }
 
-            let weave_attached = if proc.cmd().iter().any(|arg| arg.contains("loader.jar") && arg.contains("-javaagent")) {
-                true
-            } else {
-                false
-            };
+            let weave_attached = proc.cmd().iter().any(|arg| arg.contains("loader.jar") && arg.contains("-javaagent"));
 
-            Some(MinecraftInstance {
+            Some(MinecraftProcess {
                 pid: proc.pid().as_u32(),
-                cmd: proc.cmd().to_owned(),
-                cwd: proc.cwd().to_string_lossy().to_string(),
-                version: proc.cmd().iter().skip_while(|&arg| arg != "--version").nth(1)?.clone(),
                 start_time: proc.start_time(),
-                client_type,
+                info: MinecraftInfo {
+                    client: client_type,
+                    version: proc.cmd().iter().skip_while(|&arg| arg != "--version").nth(1)?.clone(),
+                    cmd: proc.cmd().to_owned(),
+                    cwd: proc.cwd().to_string_lossy().to_string()
+                },
                 weave_attached
             })
-        })
-        .collect()
+        }).collect()
+}
+
+fn prepare_mod_profile(profile: ModProfile) -> Result<bool> {
+    let mods_folder = get_weave_directory()?.join("mods");
+    if !mods_folder.exists() {
+        Err(format!("Attempting to prepare mod profile {}, but mods folder does not exist", &profile.name))?
+    }
+
+    let mods = read_dir(mods_folder)?;
+    for _mod in mods {
+        let _mod = _mod.unwrap();
+        let file_name = _mod.file_name().to_string_lossy().to_string();
+
+        let disabled = file_name.ends_with(".disabled");
+
+        if profile.mods.iter().any(|entry| file_name.to_lowercase().contains(&entry.file_name.to_lowercase())) {
+            // if the file name ends with .disabled remove ".disabled"
+            if disabled {
+                rename(_mod.path(), _mod.path().with_extension("jar"))?;
+            }
+        } else if !disabled {
+            // if the file name doesn't already end with .disabled, add ".disabled"
+            rename(_mod.path(), _mod.path().with_extension("disabled"))?;
+        }
+    }
+    Ok(true)
 }
 
 #[tauri::command]
-fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<AppState>, app: tauri::AppHandle) -> Result<()> {
+fn select_mod_profile(profile: ModProfile) -> Result<bool> {
+    prepare_mod_profile(profile)
+}
+
+#[tauri::command]
+fn launch(profile: LaunchProfile, app_state: State<AppState>, app: tauri::AppHandle) -> Result<()> {
+    let mc = profile.mc_info;
     let weave_loader_path = get_weave_loader_path()?;
-    cmd_line.insert(1, format!("-javaagent:{}", weave_loader_path.to_str().unwrap()));
+
+    // Prepare the mod profile for this launch profile, if there is any
+    if let Some(value) = profile.mod_profile {
+        prepare_mod_profile(value)?;
+    }
+
+    // Insert the weave agent to the command line
+    let mut cmd = mc.cmd;
+    cmd.insert(1, format!("-javaagent:{}", weave_loader_path.to_str().unwrap()));
 
     // piped outputs
     let (reader, writer) = os_pipe::pipe()?;
 
-    let child = Command::new(&cmd_line[0])
-        .current_dir(Path::new(&cwd))
+    // spawn the process
+    let child = Command::new(&cmd[0])
+        .current_dir(Path::new(&mc.cwd))
         .stderr(writer.try_clone()?)
         .stdout(writer)
-        .args(&cmd_line[1..])
+        .args(&cmd[1..])
         .spawn()?;
 
+    // select the most recent process spawned as the console output
     app_state.selected_process.store(child.id(), Ordering::Relaxed);
 
+    // capture these values before moving into the closure
     let selected_process = Arc::clone(&app_state.selected_process);
     let log_dir = get_weave_logs_path()?;
     let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
+
+    // pipe the output to a file and emit an event containing the line
     std::thread::spawn(move || {
         let log_path = log_dir.join(log_name);
         let mut log_file = File::create(&log_path).expect("Failed to create log file");
@@ -196,6 +269,7 @@ fn relaunch_with_weave(cwd: String, mut cmd_line: Vec<String>, app_state: State<
             }
         }
     });
+
     Ok(())
 }
 
@@ -265,14 +339,15 @@ fn main() {
         })
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
-            fetch_minecraft_instances,
+            fetch_minecraft_processes,
             kill_pid,
             get_memory_usage,
             get_analytics,
-            relaunch_with_weave,
+            launch,
             read_mod_config,
             switch_console_output,
-            check_loader_integrity
+            check_loader_integrity,
+            select_mod_profile
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
