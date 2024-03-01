@@ -64,7 +64,9 @@ export interface Agent {
 
 export interface MinecraftProcess {
     pid: number
+    start_time: number
     info: MinecraftInfo
+    weave_attached: boolean
 }
 
 export interface MinecraftInfo {
@@ -78,4 +80,15 @@ export interface OptionButton {
     label: string
     icon: string
     action: () => void
+}
+
+export interface ConsolePayload {
+    line: string,
+    file_path: string
+}
+
+export interface Analytics {
+    launch_times: number[],
+    time_played: number,
+    average_launch_time: number
 }
