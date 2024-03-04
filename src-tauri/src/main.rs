@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod error;
+
+use std::collections::HashMap;
 use error::Result;
 
 use std::ffi::OsStr;
@@ -26,7 +28,7 @@ use tauri::api::path::home_dir;
 use data_encoding::HEXUPPER;
 use ring::digest::{Context, Digest, SHA256};
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Clone, Serialize, Deserialize)]
 enum ClientType {
     Lunar,
     Forge,
@@ -66,6 +68,16 @@ struct ModConfig {
     description: String,
     authors: Vec<String>
 }
+impl Default for ModConfig {
+    fn default() -> Self {
+        ModConfig {
+            name: "undefined".to_string(),
+            version: "undefined".to_string(),
+            description: "undefined".to_string(),
+            authors: Vec::new()
+        }
+    }
+}
 #[derive(Serialize, Deserialize)]
 struct LaunchProfile {
     name: String,
@@ -73,7 +85,7 @@ struct LaunchProfile {
     mod_profile: Option<ModProfile>
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 struct Analytics {
     launch_times: Vec<u32>,
     time_played: u64,
@@ -81,21 +93,28 @@ struct Analytics {
 }
 
 #[derive(Clone, Serialize)]
-struct ConsolePayload<'a> {
-    line: String,
-    file_path: &'a String
+struct ConsolePayload {
+    line: String
+}
+
+#[derive(Clone, Serialize)]
+struct WeaveProcess {
+    log_file: PathBuf,
+    client: ClientType,
+    pid: u32,
+    output: Vec<String>
 }
 
 fn get_weave_directory() -> Result<PathBuf> {
     Ok(home_dir().ok_or("Home directory not found")?.join(".weave"))
 }
 
-fn get_weave_logs_path() -> Result<PathBuf> {
-    let logs_dir = get_weave_directory()?.join("logs");
-    if !logs_dir.exists() {
-        fs::create_dir(&logs_dir)?;
+fn get_weave_client_logs_path() -> Result<PathBuf> {
+    let log_dir = get_weave_directory()?.join("logs").join("client");
+    if !log_dir.exists() {
+        fs::create_dir(&log_dir)?;
     }
-    Ok(logs_dir)
+    Ok(log_dir)
 }
 
 fn get_weave_loader_path() -> Result<PathBuf> {
@@ -130,14 +149,17 @@ fn check_loader_integrity(sum_to_check: String) -> Result<bool> {
 
 #[tauri::command]
 fn read_mod_config(path: String) -> Result<Option<ModConfig>> {
-    let f = File::open(&path)?;
-    let mut archive = ZipArchive::new(f)?;
+    let file = File::open(&path)?;
+    let mut archive = ZipArchive::new(file)?;
     let conf = match archive.by_name("weave.mod.json") {
         Ok(conf) => conf,
-        Err(ZipError::FileNotFound) => return Ok(None),
+        Err(ZipError::FileNotFound) => return Ok(Some(ModConfig::default())),
         Err(e) => Err(e)?
     };
-    Ok(serde_json::from_reader(conf)?)
+    match serde_json::from_reader(conf) {
+        Ok(config) => Ok(Some(config)),
+        Err(_) => Ok(Some(ModConfig::default()))
+    }
 }
 
 #[tauri::command]
@@ -188,46 +210,10 @@ fn fetch_minecraft_processes(app_state: State<AppState>) -> Vec<MinecraftProcess
         }).collect()
 }
 
-fn prepare_mod_profile(profile: ModProfile) -> Result<bool> {
-    let mods_folder = get_weave_directory()?.join("mods");
-    if !mods_folder.exists() {
-        Err(format!("Attempting to prepare mod profile {}, but mods folder does not exist", &profile.name))?
-    }
-
-    let mods = read_dir(mods_folder)?;
-    for _mod in mods {
-        let _mod = _mod.unwrap();
-        let file_name = _mod.file_name().to_string_lossy().to_string();
-
-        let disabled = file_name.ends_with(".disabled");
-
-        if profile.mods.iter().any(|entry| file_name.to_lowercase().contains(&entry.file_name.to_lowercase())) {
-            // if the file name ends with .disabled remove ".disabled"
-            if disabled {
-                rename(_mod.path(), _mod.path().with_extension("jar"))?;
-            }
-        } else if !disabled {
-            // if the file name doesn't already end with .disabled, add ".disabled"
-            rename(_mod.path(), _mod.path().with_extension("disabled"))?;
-        }
-    }
-    Ok(true)
-}
-
-#[tauri::command]
-fn select_mod_profile(profile: ModProfile) -> Result<bool> {
-    prepare_mod_profile(profile)
-}
-
 #[tauri::command]
 fn launch(profile: LaunchProfile, app_state: State<AppState>, app: tauri::AppHandle) -> Result<()> {
     let mc = profile.mc_info;
     let weave_loader_path = get_weave_loader_path()?;
-
-    // Prepare the mod profile for this launch profile, if there is any
-    if let Some(value) = profile.mod_profile {
-        prepare_mod_profile(value)?;
-    }
 
     // Insert the weave agent to the command line
     let mut cmd = mc.cmd;
@@ -244,18 +230,27 @@ fn launch(profile: LaunchProfile, app_state: State<AppState>, app: tauri::AppHan
         .args(&cmd[1..])
         .spawn()?;
 
+    // capture these values before moving into the closure
+    let log_dir = get_weave_client_logs_path()?;
+    let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
+    let log_path = log_dir.join(log_name);
+
     // select the most recent process spawned as the console output
     app_state.selected_process.store(child.id(), Ordering::Relaxed);
-
-    // capture these values before moving into the closure
+    // create a clone that can safely be referenced after move
     let selected_process = Arc::clone(&app_state.selected_process);
-    let log_dir = get_weave_logs_path()?;
-    let log_name = Local::now().format("%Y-%m-%d-%H%M%S.log").to_string();
 
     // pipe the output to a file and emit an event containing the line
     std::thread::spawn(move || {
-        let log_path = log_dir.join(log_name);
         let mut log_file = File::create(&log_path).expect("Failed to create log file");
+
+        app.emit_all("spawned_weave", WeaveProcess {
+            log_file: log_path,
+            client: mc.client,
+            pid: child.id(),
+            output: Vec::new()
+        }).expect("Failed to emit spawned_weave event to renderer");
+
         let buf_reader = BufReader::new(reader);
 
         for line in buf_reader.lines().filter_map(|l| l.ok()) {
@@ -263,9 +258,8 @@ fn launch(profile: LaunchProfile, app_state: State<AppState>, app: tauri::AppHan
 
             if selected_process.load(Ordering::Relaxed) == child.id() {
                 app.emit_all("console_output", ConsolePayload {
-                    line,
-                    file_path: &log_path.display().to_string()
-                }).expect("Failed to emit console log to renderer");
+                    line
+                }).expect("Failed to emit console_output event to renderer");
             }
         }
     });
@@ -275,11 +269,12 @@ fn launch(profile: LaunchProfile, app_state: State<AppState>, app: tauri::AppHan
 
 #[tauri::command]
 fn switch_console_output(pid: u32, app_state: State<AppState>) {
-    app_state.selected_process.store(pid, Ordering::Relaxed)
+    app_state.selected_process.store(pid, Ordering::Relaxed);
 }
 
 #[tauri::command]
 fn kill_pid(pid: u32, app_state: State<AppState>) -> bool {
+    // app_state.weave_processes.remove(&pid);
     app_state.system.lock().unwrap().process(Pid::from_u32(pid)).is_some_and(|p| p.kill())
 }
 
@@ -346,8 +341,7 @@ fn main() {
             launch,
             read_mod_config,
             switch_console_output,
-            check_loader_integrity,
-            select_mod_profile
+            check_loader_integrity
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -2,8 +2,8 @@
     import {invoke} from "@tauri-apps/api/tauri";
     import type {Analytics} from "../../../../scripts/types";
     import {onDestroy, onMount} from "svelte";
+    import {processMap} from "../../../../scripts/store";
 
-    export let instances: number
     let memoryUsage: string = "N/A"
     let avgLaunchTime: string = "N/A"
     let timePlayed: string = "None"
@@ -68,7 +68,7 @@
         </div>
         <div id="process-count" class="analytic">
             <h1 class="font-semibold">MC Process Count</h1>
-            <h1>{instances} {instances > 1 ? "Processes" : "Process"} </h1>
+            <h1>{$processMap.size} {$processMap.size > 1 ? "Processes" : "Process"} </h1>
         </div>
         <div id="time-played" class="analytic">
             <h1 class="font-semibold">Time Played</h1>

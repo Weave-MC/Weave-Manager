@@ -1,64 +1,33 @@
-export class LaunchProfile {
-    public name: string
-    public mcInfo: MinecraftInfo
-    public modProfile: ModProfile
-
-    constructor(
-        name: string,
-        mcInfo: MinecraftInfo,
-        modProfile: ModProfile
-    ) {
-        this.name = name
-        this.mcInfo = mcInfo
-        this.modProfile = modProfile
-
-        this.saveProfile()
-    }
-
-    public saveProfile() {
-        if (this.modProfile)
-            this.modProfile.saveProfile()
-    }
-    public launchProfile(): void {
-
-    }
-    public deleteProfile() {
-
-    }
+export interface LaunchProfile extends Profile {
+    name: string
+    mc_info: MinecraftInfo
+    mod_profile: ModProfile
 }
 
-export class ModProfile {
-    public name: string
-    public mods: Mod[]
-
-    constructor(
-        name: string,
-        mods: Mod[]
-    ) {
-        this.name = name
-        this.mods = mods
-
-        this.saveProfile()
-    }
-
-    public saveProfile() {
-
-    }
+export interface ModProfile extends Profile {
+    name: string
+    mods: Mod[]
 }
+
+export interface Profile {}
 
 export interface Mod {
-    name: string
-    description: string
-    version: string
-    authors: string[]
-    filePath: string
-    fileName: string
+    mod_info: ModInfo
+    file_path: string
+    file_name: string
     disabled: boolean
 }
 
+export interface ModInfo {
+    name: string
+    version: string
+    description: string
+    authors: string[]
+}
+
 export interface Agent {
-    filePath: string
-    fileName: string
+    file_path: string
+    file_name: string
     disabled: boolean
 }
 
@@ -67,6 +36,10 @@ export interface MinecraftProcess {
     start_time: number
     info: MinecraftInfo
     weave_attached: boolean
+}
+
+export interface ProcessHistory {
+    history: MinecraftProcess[]
 }
 
 export interface MinecraftInfo {
@@ -83,12 +56,18 @@ export interface OptionButton {
 }
 
 export interface ConsolePayload {
-    line: string,
-    file_path: string
+    line: string
+}
+
+export interface WeaveProcess {
+    log_file: string
+    client: string
+    pid: number
+    output: string[]
 }
 
 export interface Analytics {
-    launch_times: number[],
-    time_played: number,
+    launch_times: number[]
+    time_played: number
     average_launch_time: number
 }

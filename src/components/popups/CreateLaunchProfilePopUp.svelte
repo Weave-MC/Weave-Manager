@@ -2,8 +2,11 @@
     import PopUp from "../util/PopUp.svelte";
     import type {MinecraftInfo} from "../../scripts/types.js";
     import {createLaunchProfile} from "../../scripts/shared.js";
+    import Selection from "../util/Selection.svelte";
+    import {modProfiles} from "../../scripts/store";
 
     let popup: PopUp
+    let selection: HTMLSelectElement
     let dialogInput: HTMLInputElement
     let launchProfileInfo: MinecraftInfo // the information of the last process to undergo a launch profile creation
 
@@ -14,13 +17,22 @@
         popup.show()
     }
     async function finalizeCreateLaunchProfile() {
-        const result = await createLaunchProfile(dialogInput.value, launchProfileInfo)
-        if (!result) {
-            // file already exists
-            failed = true
-        } else {
-            closePopup()
+        let modProfile = null
+        if (selection.value != "None") {
+
         }
+
+        modProfile = $modProfiles.values().find((profile) => profile.name == selection.value)
+
+        const result = await createLaunchProfile(dialogInput.value, launchProfileInfo, modProfile)
+
+        failed = !result
+        if (!failed)
+            closePopup()
+    }
+
+    function getModProfileOptions(): string[] {
+        return ["None", ...Array.from($modProfiles.values()).map((mod) => mod.name)]
     }
 
     function closePopup() {
@@ -35,7 +47,11 @@
         <div class="{failed ? 'visible' : 'hidden'} w-full text-disabled text-center">
             Failed to create Launch Profile
         </div>
-        <input bind:this={dialogInput} type="text" class="bg-overlay border-none rounded-lg h-10 w-full outline-none">
+        <Selection bind:selection={selection} title="Mod Profile" options={getModProfileOptions()} class="bg-overlay rounded-lg w-full h-10"/>
+        <div class="flex flex-col justify-center items-center gap-2 w-full">
+            <h1>Profile Name</h1>
+            <input bind:this={dialogInput} type="text" class="bg-overlay border-none rounded-lg h-10 w-full outline-none">
+        </div>
         <div id="action-buttons" class="flex flex-row justify-around w-full">
             <button class="w-20 h-10 bg-overlay rounded text-text" on:click={finalizeCreateLaunchProfile}>
                 Create
