@@ -1,6 +1,15 @@
 import {writable} from "svelte/store"
-import type {Agent, LaunchProfile, MinecraftProcess, Mod, ModProfile, ProcessHistory, WeaveProcess} from "./types";
-import {readProfiles, readProcessHistory, readMods, readAgents} from "./shared";
+import type {
+    Agent,
+    LaunchProfile,
+    MinecraftProcess,
+    Mod,
+    ModProfile,
+    ProcessHistory,
+    Settings,
+    WeaveProcess
+} from "./types";
+import {readProfiles, readProcessHistory, readMods, readAgents, readSettings} from "./shared";
 
 export const processMap = writable<Map<number, MinecraftProcess>>(new Map())
 export const processHistory = writable<ProcessHistory>(await readProcessHistory())
@@ -15,3 +24,5 @@ export const selectedWeaveProcess = writable<WeaveProcess>(<WeaveProcess> {
     output: []
 })
 export const weaveProcessMap = writable<Map<number, WeaveProcess>>(new Map())
+
+export const settings = writable<Settings>(await readSettings())

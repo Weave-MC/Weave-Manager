@@ -5,7 +5,7 @@ import type {
     MinecraftProcess, Mod,
     ModProfile,
     ProcessHistory,
-    Profile
+    Profile, Settings
 } from "./types";
 import {
     writeFile,
@@ -145,6 +145,25 @@ export async function readProfiles<T extends Profile>(extension: string): Promis
     }
 
     return map
+}
+
+export async function readSettings(): Promise<Settings> {
+    const settingsFile = `${await getWeaveDirectory()}/manager.settings`
+    let fileContent: Settings
+    if (await exists(settingsFile)) {
+        fileContent = <Settings> JSON.parse(await readTextFile(settingsFile))
+    } else {
+        fileContent = <Settings> {
+            auto_update: true,
+            startup_run: true,
+            compact_buttons: false,
+            theme: "theme-darcula"
+        }
+
+        await writeTextFile(settingsFile, JSON.stringify(fileContent))
+    }
+
+    return fileContent
 }
 
 export async function saveLaunchProfile(profile: LaunchProfile) {

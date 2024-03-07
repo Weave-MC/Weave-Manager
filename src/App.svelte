@@ -4,7 +4,7 @@
     import {onDestroy, onMount} from "svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import type {ConsolePayload, MinecraftProcess, WeaveProcess} from "./scripts/types";
-    import {processHistory, processMap, selectedWeaveProcess, weaveProcessMap} from "./scripts/store";
+    import {processHistory, processMap, selectedWeaveProcess, settings, weaveProcessMap} from "./scripts/store";
     import {listen} from "@tauri-apps/api/event";
     import ErrorModal from "./components/util/ErrorModal.svelte";
     import {getHistoryLogsDirectory} from "./scripts/shared";
@@ -53,6 +53,7 @@
 
         scheduleTask = setInterval(async () => {
             await updateProcessMap()
+            console.log($settings.theme.toLowerCase())
         }, 1000)
     })
 
@@ -61,7 +62,7 @@
     })
 </script>
 
-<main id="main" class="theme-moonlight absolute w-screen h-screen overflow-clip text-text bg-crust select-none">
+<main id="main" class="{$settings.theme.toLowerCase()} absolute w-screen h-screen overflow-clip text-text bg-crust select-none">
     <HeaderBar/>
     <SideBar bind:selectedPage/>
     <div id="content" class="fixed top-14 left-14 right-0 bottom-0 flex flex-col p-3 gap-3">

@@ -2,13 +2,14 @@
     import type {OptionButton} from "../../scripts/types";
     import {clickOutside} from "../../scripts/click-outside";
     import {scroll} from "./VerticalScroll.svelte";
+    import {settings} from "../../scripts/store";
 
     export let buttons: OptionButton[]
 
     let dropdown: HTMLElement
     let cozyButtons: HTMLElement
 
-    let compact: boolean = false
+    let compact: boolean = $settings.compact_buttons
     let dropdownVisible: boolean
 
     function toggleCompactDropdown() {

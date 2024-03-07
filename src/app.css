@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    .theme-darcula {
+    .theme_darcula {
         --color-crust: #2b2b2b;
         --color-base: #323232;
         --color-surface: #3c3f41;
@@ -13,27 +13,7 @@
         --color-enabled: #417E4C;
         --color-accent: #567899;
     }
-    .theme-amoled {
-        --color-crust: #000000;
-        --color-base: #000000;
-        --color-surface: #000000;
-        --color-overlay: #FFFFFF;
-        --color-text: #FFFFFF;
-        --color-disabled: #FF0000;
-        --color-enabled: #00FF00;
-        --color-accent: #FFFFFF;
-    }
-    .theme-deep-ocean {
-        --color-crust: #02070f;
-        --color-base: #040c18;
-        --color-surface: #02070f;
-        --color-overlay: #FFFFFF;
-        --color-text: #FFFFFF;
-        --color-disabled: #FF0000;
-        --color-enabled: #00FF00;
-        --color-accent: #FFFFFF;
-    }
-    .theme-light {
+    .theme_light {
         --color-crust: #f2f2f2;
         --color-base: #e2e6ec;
         --color-surface: #ffffff;
@@ -43,7 +23,7 @@
         --color-enabled: #7dba89;
         --color-accent: #5FB3B3;
     }
-    .theme-moonlight {
+    .theme_moonlight {
         --color-crust: #191a2a;
         --color-base: #1e2030;
         --color-surface: #222436;
@@ -53,7 +33,7 @@
         --color-enabled: #499c54;
         --color-accent: #7f97cb;
     }
-    .theme-purple-rain {
+    .theme_purplerain {
         --color-crust: #100710;
         --color-base: #160A16;
         --color-surface: #16071C;
@@ -63,7 +43,7 @@
         --color-enabled: #99C794;
         --color-accent: #5FB3B3;
     }
-    .theme-gruvbox {
+    .theme_gruvbox {
         --color-crust: #1D2021;
         --color-base: #282828;
         --color-surface: #3C3836;
@@ -73,7 +53,7 @@
         --color-enabled: #B8BB26;
         --color-accent: #98971A;
     }
-    .theme-cat-macchiato {
+    .theme_cat_macchiato {
         --color-crust: #181926;
         --color-base: #24273a;
         --color-surface: #363a4f;
@@ -83,7 +63,7 @@
         --color-enabled: #a6da95;
         --color-accent: #f0c6c6;
     }
-    .theme-cat-mocha {
+    .theme_cat_mocha {
         --color-crust: #11111b;
         --color-base: #1e1e2e;
         --color-surface: #313244;
@@ -93,7 +73,7 @@
         --color-enabled: #a6e3a1;
         --color-accent: #f2cdcd;
     }
-    .theme-cat-frappe {
+    .theme_cat_frappe {
         --color-crust: #232634;
         --color-base: #303446;
         --color-surface: #414559;
@@ -102,15 +82,5 @@
         --color-disabled: #e78284;
         --color-enabled: #a6d189;
         --color-accent: #eebebe;
-    }
-    .theme-halloween {
-        --color-crust: #0a0a0a;
-        --color-base: #e77f1e;
-        --color-surface: #000000;
-        --color-overlay: #462d12;
-        --color-text: #ffffff;
-        --color-disabled: #b8272a;
-        --color-enabled: #74d136;
-        --color-accent: #8c00ff;
     }
 }

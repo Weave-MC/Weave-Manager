@@ -1,14 +1,17 @@
 <script lang="ts">
     import PopUp from "../util/PopUp.svelte";
-    import type {MinecraftInfo} from "../../scripts/types.js";
+    import type {MinecraftInfo, SelectionOption} from "../../scripts/types.js";
     import {createLaunchProfile} from "../../scripts/shared.js";
     import Selection from "../util/Selection.svelte";
     import {modProfiles} from "../../scripts/store";
 
     let popup: PopUp
-    let selection: HTMLSelectElement
     let dialogInput: HTMLInputElement
     let launchProfileInfo: MinecraftInfo // the information of the last process to undergo a launch profile creation
+    let selected: SelectionOption = {
+        name: "None",
+        value: "None"
+    }
 
     let failed: boolean = false
 
@@ -18,11 +21,8 @@
     }
     async function finalizeCreateLaunchProfile() {
         let modProfile = null
-        if (selection.value != "None") {
-
-        }
-
-        modProfile = $modProfiles.values().find((profile) => profile.name == selection.value)
+        if (selected.value != "None")
+            modProfile = Array.from($modProfiles.values()).find((profile) => profile.name == selected.value)
 
         const result = await createLaunchProfile(dialogInput.value, launchProfileInfo, modProfile)
 
@@ -31,8 +31,11 @@
             closePopup()
     }
 
-    function getModProfileOptions(): string[] {
-        return ["None", ...Array.from($modProfiles.values()).map((mod) => mod.name)]
+    function getModProfileOptions(): SelectionOption[] {
+        return [{name: "None", value: "None"}, ...Array.from($modProfiles.values()).map((mod) => <SelectionOption> {
+            name: mod.name,
+            value: mod.name
+        })]
     }
 
     function closePopup() {
@@ -47,7 +50,7 @@
         <div class="{failed ? 'visible' : 'hidden'} w-full text-disabled text-center">
             Failed to create Launch Profile
         </div>
-        <Selection bind:selection={selection} title="Mod Profile" options={getModProfileOptions()} class="bg-overlay rounded-lg w-full h-10"/>
+        <Selection bind:selected={selected} title="Mod Profile" options={getModProfileOptions()} class="bg-overlay rounded-lg w-full py-2"/>
         <div class="flex flex-col justify-center items-center gap-2 w-full">
             <h1>Profile Name</h1>
             <input bind:this={dialogInput} type="text" class="bg-overlay border-none rounded-lg h-10 w-full outline-none">

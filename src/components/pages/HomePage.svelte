@@ -25,13 +25,15 @@
     }
 </script>
 
-<div id="inner-nav" class="w-full h-[10%] bg-surface rounded-lg px-16">
+<div id="inner-nav" class="w-full h-12 bg-surface rounded-lg px-16">
     <div id="content" class="relative w-full h-full flex flex-row justify-between items-center text-xl font-semibold">
-        <button class="w-1/5 h-full" on:click={() => selectPage("overview")}>Overview</button>
-        <button class="w-1/5 h-full" on:click={() => selectPage("game")}>Game</button>
-        <button class="w-1/5 h-full" on:click={() => selectPage("mods")}>Mods</button>
+        <button class="w-1/4 h-full" on:click={() => selectPage("overview")}>Overview</button>
+        <button class="w-1/4 h-full" on:click={() => selectPage("game")}>Game</button>
+        <button class="w-1/4 h-full" on:click={() => selectPage("mods")}>Mods</button>
 
-        <span id="glider" class="absolute bottom-0 rounded-t-lg h-1.5 w-1/5 bg-accent {selectedClass}"/>
+        <div id="glider" class="absolute bottom-0 w-1/4 {selectedClass} flex justify-center items-center">
+            <span class="rounded-t-lg h-[0.25rem] w-28 bg-accent"/>
+        </div>
     </div>
 </div>
 <div id="page" class="relative w-full h-[90%] rounded-lg">
@@ -46,9 +48,9 @@
         left: 0;
     }
     .game {
-        left: 40%;
+        left: 37.5%;
     }
     .mods {
-        left: 80%;
+        left: 75%;
     }
 </style>
