@@ -71,3 +71,26 @@ export interface Analytics {
     time_played: number
     average_launch_time: number
 }
+
+export interface Settings {
+    auto_update: boolean
+    startup_run: boolean
+    compact_buttons: boolean
+    theme: string
+}
+
+export enum Themes {
+    THEME_DARCULA = "Darcula",
+    THEME_LIGHT = "Light",
+    THEME_MOONLIGHT = "Moonlight",
+    THEME_PURPLE_RAIN = "Purple Rain",
+    THEME_GRUVBOX = "Gruvbox",
+    THEME_CAT_MACCHIATO = "Cat Macchiato",
+    THEME_CAT_MOCHA = "Cat Mocha",
+    THEME_CAT_FRAPPE = "Cat Frappe"
+}
+
+export interface SelectionOption {
+    name: string,
+    value: string
+}
