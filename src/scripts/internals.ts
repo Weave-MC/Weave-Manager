@@ -70,10 +70,7 @@ export async function checkForLoaderUpdate(): Promise<LoaderUpdateResponse> {
     }) as Response<string>
 
     const sha256 = sha256Response.data.split(" ")[0]
-
     const shouldUpdate = !await invoke("check_loader_integrity", {sumToCheck: sha256.toUpperCase()})
-
-    console.log(shouldUpdate)
 
     return <LoaderUpdateResponse> {
         update: shouldUpdate,
