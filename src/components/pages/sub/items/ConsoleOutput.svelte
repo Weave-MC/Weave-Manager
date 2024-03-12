@@ -1,6 +1,6 @@
 <script lang="ts">
     import {shell} from "@tauri-apps/api";
-    import LoadSpinner from "../../../../components_old/LoadSpinner.svelte";
+    import LoadSpinner from "../../../util/LoadSpinner.svelte";
     import type {MinecraftProcess} from "../../../../scripts/types";
     import {selectedWeaveProcess, weaveProcessMap} from "../../../../scripts/stores";
     import {readTextFile} from "@tauri-apps/api/fs";

@@ -6,7 +6,7 @@
     import type {LoaderUpdateResponse} from "../../scripts/types";
     import {exists} from "@tauri-apps/api/fs";
     import {getWeaveDirectory} from "../../scripts/paths";
-    import LoadSpinner from "../../components_old/LoadSpinner.svelte";
+    import LoadSpinner from "../util/LoadSpinner.svelte";
 
     let popup: PopUp
     let updating: boolean = false

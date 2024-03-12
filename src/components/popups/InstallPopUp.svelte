@@ -1,6 +1,6 @@
 <script lang="ts">
     import PopUp from "../util/PopUp.svelte";
-    import LoadSpinner from "../../components_old/LoadSpinner.svelte";
+    import LoadSpinner from "../util/LoadSpinner.svelte";
     import {relaunch} from "@tauri-apps/api/process";
     import {onMount} from "svelte";
     import {exists} from "@tauri-apps/api/fs";
