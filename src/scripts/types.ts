@@ -74,9 +74,11 @@ export interface Analytics {
 
 export interface Settings {
     auto_update: boolean
+    ignore_updates: boolean
     startup_run: boolean
     compact_buttons: boolean
     theme: string
+    loader_version: string
 }
 
 export enum Themes {
@@ -93,4 +95,20 @@ export enum Themes {
 export interface SelectionOption {
     name: string,
     value: string
+}
+
+export interface LoaderUpdateResponse {
+    update: boolean
+    download_url: string
+    version: string
+}
+
+export type GitHubApiResponse = {
+    tag_name: string
+    assets: [Asset]
+}
+
+export type Asset = {
+    name: string
+    browser_download_url: string
 }
