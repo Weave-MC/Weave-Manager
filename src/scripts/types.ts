@@ -82,14 +82,14 @@ export interface Settings {
 }
 
 export enum Themes {
-    THEME_DARCULA = "Darcula",
-    THEME_LIGHT = "Light",
-    THEME_MOONLIGHT = "Moonlight",
-    THEME_PURPLE_RAIN = "Purple Rain",
-    THEME_GRUVBOX = "Gruvbox",
-    THEME_CAT_MACCHIATO = "Cat Macchiato",
-    THEME_CAT_MOCHA = "Cat Mocha",
-    THEME_CAT_FRAPPE = "Cat Frappe"
+    DARCULA = "Darcula",
+    LIGHT = "Light",
+    MOONLIGHT = "Moonlight",
+    PURPLE_RAIN = "Purple Rain",
+    GRUVBOX = "Gruvbox",
+    CAT_MACCHIATO = "Cat Macchiato",
+    CAT_MOCHA = "Cat Mocha",
+    CAT_FRAPPE = "Cat Frappe"
 }
 
 export interface SelectionOption {

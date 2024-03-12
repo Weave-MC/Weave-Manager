@@ -163,7 +163,7 @@ export async function readSettings(): Promise<Settings> {
             ignore_updates: false,
             startup_run: true,
             compact_buttons: false,
-            theme: "theme-darcula",
+            theme: "DARCULA",
             loader_version: undefined
         }
 

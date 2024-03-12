@@ -3,7 +3,7 @@
     import SideBar from "./components/SideBar.svelte";
     import {onDestroy, onMount} from "svelte";
     import type {ConsolePayload, WeaveProcess} from "./scripts/types";
-    import {selectedWeaveProcess, weaveProcessMap} from "./scripts/stores";
+    import {selectedWeaveProcess, settings, weaveProcessMap} from "./scripts/stores";
     import {listen} from "@tauri-apps/api/event";
     import ErrorModal from "./components/util/ErrorModal.svelte";
     import {updateProcessMap} from "./scripts/internals";
@@ -32,7 +32,7 @@
     })
 </script>
 
-<main id="main" class="theme_darcula absolute w-screen h-screen overflow-clip text-text bg-crust select-none">
+<main id="main" class="theme-{$settings.theme.replace('_', '-').toLowerCase()} absolute w-screen h-screen overflow-clip text-text bg-crust select-none">
     <HeaderBar/>
     <SideBar bind:selectedPage/>
     <div id="content" class="fixed top-14 left-14 right-0 bottom-0 flex flex-col p-3 gap-3">

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    .theme_darcula {
+    .theme-darcula {
         --color-crust: #2b2b2b;
         --color-base: #323232;
         --color-surface: #3c3f41;
@@ -13,7 +13,7 @@
         --color-enabled: #417E4C;
         --color-accent: #567899;
     }
-    .theme_light {
+    .theme-light {
         --color-crust: #f2f2f2;
         --color-base: #e2e6ec;
         --color-surface: #ffffff;
@@ -23,7 +23,7 @@
         --color-enabled: #7dba89;
         --color-accent: #5FB3B3;
     }
-    .theme_moonlight {
+    .theme-moonlight {
         --color-crust: #191a2a;
         --color-base: #1e2030;
         --color-surface: #222436;
@@ -33,7 +33,7 @@
         --color-enabled: #499c54;
         --color-accent: #7f97cb;
     }
-    .theme_purplerain {
+    .theme-purple-rain {
         --color-crust: #100710;
         --color-base: #160A16;
         --color-surface: #16071C;
@@ -43,7 +43,7 @@
         --color-enabled: #99C794;
         --color-accent: #5FB3B3;
     }
-    .theme_gruvbox {
+    .theme-gruvbox {
         --color-crust: #1D2021;
         --color-base: #282828;
         --color-surface: #3C3836;
@@ -53,7 +53,7 @@
         --color-enabled: #B8BB26;
         --color-accent: #98971A;
     }
-    .theme_cat_macchiato {
+    .theme-cat-macchiato {
         --color-crust: #181926;
         --color-base: #24273a;
         --color-surface: #363a4f;
@@ -63,7 +63,7 @@
         --color-enabled: #a6da95;
         --color-accent: #f0c6c6;
     }
-    .theme_cat_mocha {
+    .theme-cat-mocha {
         --color-crust: #11111b;
         --color-base: #1e1e2e;
         --color-surface: #313244;
@@ -73,7 +73,7 @@
         --color-enabled: #a6e3a1;
         --color-accent: #f2cdcd;
     }
-    .theme_cat_frappe {
+    .theme-cat-frappe {
         --color-crust: #232634;
         --color-base: #303446;
         --color-surface: #414559;

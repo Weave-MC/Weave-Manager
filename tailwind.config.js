@@ -1,6 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.svelte"],
+  purge: {
+    content: ["./src/**/*.svelte"],
+    options: {
+      safelist: [
+        "theme-darcula",
+        "theme-darcula",
+        "theme-light",
+        "theme-moonlight",
+        "theme-purple-rain",
+        "theme-gruvbox",
+        "theme-cat-macchiato",
+        "theme-cat-mocha",
+        "theme-cat-frappe"
+      ]
+    }
+  },
   theme: {
     colors: {
       'crust': 'var(--color-crust)',
