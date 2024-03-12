@@ -16,7 +16,8 @@
         const rect = popup.getBoundingClientRect()
         const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
         if (!isInDialog) {
-            if (dispatch("click-outside", {cancelable: true})) {
+            const shouldContinue = dispatch("click-outside", "", {cancelable: true})
+            if (shouldContinue) {
                 _close()
             }
         }
