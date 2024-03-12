@@ -1,12 +1,12 @@
 <script lang="ts">
     import {type MinecraftProcess} from "../../../../scripts/types";
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
-    import {showProcessInfo} from "../../../../scripts/shared";
+    import {showProcessInfo} from "../../../../scripts/components";
     import ButtonBar from "../../../util/ButtonBar.svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {createEventDispatcher} from "svelte";
     import CreateLaunchProfilePopUp from "../../../popups/CreateLaunchProfilePopUp.svelte";
-    import {processMap, weaveProcessMap} from "../../../../scripts/store";
+    import {processMap, weaveProcessMap} from "../../../../scripts/stores";
 
     let popup: CreateLaunchProfilePopUp
     const dispatch = createEventDispatcher()

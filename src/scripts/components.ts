@@ -10,17 +10,22 @@ import type {
 import {
     writeFile,
     exists,
-    createDir,
     readTextFile,
     writeTextFile,
     readDir,
     renameFile,
     removeFile
 } from "@tauri-apps/api/fs"
-import {homeDir} from "@tauri-apps/api/path";
-import {launchProfiles, modList, modProfiles, processMap} from "./store";
+import {launchProfiles, modList, modProfiles, processMap} from "./stores";
 import {invoke} from "@tauri-apps/api/tauri";
 import {get} from "svelte/store";
+import {
+    getAgentsDirectory,
+    getHistoryLogsDirectory,
+    getModsDirectory,
+    getProfileDirectory, getWeaveDirectory,
+    sanitizeFileName
+} from "./paths";
 
 export async function showProcessInfo(mcProcess: MinecraftProcess) {
 
@@ -155,9 +160,11 @@ export async function readSettings(): Promise<Settings> {
     } else {
         fileContent = <Settings> {
             auto_update: true,
+            ignore_updates: false,
             startup_run: true,
             compact_buttons: false,
-            theme: "theme-darcula"
+            theme: "theme-darcula",
+            loader_version: undefined
         }
 
         await writeTextFile(settingsFile, JSON.stringify(fileContent))
@@ -232,81 +239,24 @@ export async function toggleMod(mod: Mod) {
     modList.set(list)
 }
 
-function sanitizeFileName(name: string) {
-    return name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-}
-
-export async function getAgentsDirectory() {
-    const agentsDir = `${await getWeaveDirectory()}/agents`
-    if (!await exists(agentsDir))
-        await createDir(agentsDir)
-
-    return agentsDir
-}
-export async function getModsDirectory() {
-    const modsDir = `${await getWeaveDirectory()}/mods`
-    if (!await exists(modsDir))
-        await createDir(modsDir)
-
-    return modsDir
-}
-export async function getHistoryLogsDirectory() {
-    const historyLogsDir = `${await getLogsDirectory()}/history`
-    if (!await exists(historyLogsDir))
-        await createDir(historyLogsDir)
-
-    return historyLogsDir
-}
-export async function getClientLogsDirectory() {
-    const clientLogsDir = `${await getLogsDirectory()}/client`
-    if (!await exists(clientLogsDir))
-        await createDir(clientLogsDir)
-
-    return clientLogsDir
-}
-export async function getLogsDirectory() {
-    const logsDir = `${await getWeaveDirectory()}/logs`
-    if (!await exists(logsDir))
-        await createDir(logsDir)
-
-    return logsDir
-}
-export async function getProfileDirectory() {
-    const profileDir = `${await getWeaveDirectory()}/profiles`
-    if (!await exists(profileDir))
-        await createDir(profileDir)
-
-    return profileDir
-}
-
-export async function getWeaveDirectory() {
-    const weaveDir = `${await homeDir()}/.weave`
-    if (!await exists(weaveDir))
-        await createDir(weaveDir)
-
-    return weaveDir
-}
-
 export function checkVerticalOverflow(element: HTMLElement): boolean {
     return element.scrollHeight > element.clientHeight
 }
 
-const units: {unit: Intl.RelativeTimeFormatUnit; ms: number}[] = [
-    {unit: "year", ms: 31536000000},
-    {unit: "month", ms: 2628000000},
-    {unit: "day", ms: 86400000},
-    {unit: "hour", ms: 3600000},
-    {unit: "minute", ms: 60000},
-    {unit: "second", ms: 1000},
-];
-const rtf = new Intl.RelativeTimeFormat("en", {numeric: "auto"})
-export function relativeTime(seconds: number): string {
-    const elapsed = seconds * 1000 - Date.now()
-
-    for (const {unit, ms} of units) {
-        if (Math.abs(elapsed) >= ms || unit === "second") {
-            return rtf.format(Math.round(elapsed / ms), unit);
+export function clickOutside(node) {
+    const handleClick = event => {
+        if (node && !node.contains(event.target) && !event.defaultPrevented) {
+            node.dispatchEvent(
+                new CustomEvent('click_outside', node)
+            )
         }
     }
-    return "";
+
+    document.addEventListener('click', handleClick, true);
+
+    return {
+        destroy() {
+            document.removeEventListener('click', handleClick, true);
+        }
+    }
 }

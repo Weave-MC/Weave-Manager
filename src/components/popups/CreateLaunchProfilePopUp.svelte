@@ -1,9 +1,9 @@
 <script lang="ts">
     import PopUp from "../util/PopUp.svelte";
     import type {MinecraftInfo, SelectionOption} from "../../scripts/types.js";
-    import {createLaunchProfile} from "../../scripts/shared.js";
+    import {createLaunchProfile} from "../../scripts/components.js";
     import Selection from "../util/Selection.svelte";
-    import {modProfiles} from "../../scripts/store";
+    import {modProfiles} from "../../scripts/stores";
 
     let popup: PopUp
     let dialogInput: HTMLInputElement

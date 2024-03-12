@@ -1,4 +1,4 @@
-import {writable} from "svelte/store"
+import {readable, writable} from "svelte/store"
 import type {
     Agent,
     LaunchProfile,
@@ -9,7 +9,7 @@ import type {
     Settings,
     WeaveProcess
 } from "./types";
-import {readProfiles, readProcessHistory, readMods, readAgents, readSettings} from "./shared";
+import {readProfiles, readProcessHistory, readMods, readAgents, readSettings} from "./components";
 
 export const processMap = writable<Map<number, MinecraftProcess>>(new Map())
 export const processHistory = writable<ProcessHistory>(await readProcessHistory())
@@ -26,3 +26,10 @@ export const selectedWeaveProcess = writable<WeaveProcess>(<WeaveProcess> {
 export const weaveProcessMap = writable<Map<number, WeaveProcess>>(new Map())
 
 export const settings = writable<Settings>(await readSettings())
+
+export const shiftDown = readable(false, set => {
+    const controller = new AbortController();
+    document.addEventListener('keydown', e => set(e.shiftKey), { signal: controller.signal })
+    document.addEventListener('keyup', e => set(e.shiftKey), { signal: controller.signal })
+    return () => controller.abort()
+})

@@ -5,7 +5,7 @@
 <script lang="ts">
     // this is hardcoded to only be maxed at 2
     import {afterUpdate, onMount} from "svelte";
-    import {checkVerticalOverflow} from "../../scripts/shared";
+    import {checkVerticalOverflow} from "../../scripts/components";
 
     export let columns: number = 1
     export let items: any[]

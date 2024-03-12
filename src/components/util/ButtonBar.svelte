@@ -1,8 +1,8 @@
 <script lang="ts">
     import type {OptionButton} from "../../scripts/types";
-    import {clickOutside} from "../../scripts/click-outside";
+    import {clickOutside} from "../../scripts/components";
     import {scroll} from "./VerticalScroll.svelte";
-    import {settings} from "../../scripts/store";
+    import {settings} from "../../scripts/stores";
 
     export let buttons: OptionButton[]
 

@@ -2,8 +2,9 @@
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import type {Mod, ModProfile} from "../../../../scripts/types";
     import ButtonBar from "../../../util/ButtonBar.svelte";
-    import {modList, modProfiles} from "../../../../scripts/store";
-    import {getProfileDirectory, loadModProfile, saveModProfile} from "../../../../scripts/shared";
+    import {modList, modProfiles} from "../../../../scripts/stores";
+    import {loadModProfile, saveModProfile} from "../../../../scripts/components";
+    import {getProfileDirectory} from "../../../../scripts/paths";
     import {removeFile} from "@tauri-apps/api/fs";
     import CreateModProfilePopUp from "../../../popups/CreateModProfilePopUp.svelte";
 

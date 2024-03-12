@@ -1,9 +1,10 @@
 <script lang="ts">
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import ButtonBar from "../../../util/ButtonBar.svelte";
-    import {relativeTime, showProcessInfo} from "../../../../scripts/shared";
+    import {showProcessInfo} from "../../../../scripts/components";
+    import {relativeTime} from "../../../../scripts/utils";
     import CreateLaunchProfilePopUp from "../../../popups/CreateLaunchProfilePopUp.svelte";
-    import {processHistory} from "../../../../scripts/store";
+    import {processHistory} from "../../../../scripts/stores";
 
     let popup: CreateLaunchProfilePopUp
 </script>

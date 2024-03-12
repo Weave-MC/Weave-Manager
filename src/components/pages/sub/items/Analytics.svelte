@@ -2,7 +2,7 @@
     import {invoke} from "@tauri-apps/api/tauri";
     import type {Analytics} from "../../../../scripts/types";
     import {onDestroy, onMount} from "svelte";
-    import {processMap} from "../../../../scripts/store";
+    import {processMap} from "../../../../scripts/stores";
 
     let memoryUsage: string = "N/A"
     let avgLaunchTime: string = "N/A"

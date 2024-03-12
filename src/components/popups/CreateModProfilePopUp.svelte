@@ -1,7 +1,7 @@
 <script lang="ts">
     import PopUp from "../util/PopUp.svelte";
     import type {Mod} from "../../scripts/types.js";
-    import {createModProfile} from "../../scripts/shared.js";
+    import {createModProfile} from "../../scripts/components.js";
 
     let popup: PopUp
     let dialogInput: HTMLInputElement

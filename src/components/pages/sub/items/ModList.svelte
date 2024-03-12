@@ -2,8 +2,9 @@
     import type {Mod} from "../../../../scripts/types"
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import ButtonBar from "../../../util/ButtonBar.svelte";
-    import {modList} from "../../../../scripts/store";
-    import {getModsDirectory, toggleMod} from "../../../../scripts/shared";
+    import {modList} from "../../../../scripts/stores";
+    import {toggleMod} from "../../../../scripts/components";
+    import {getModsDirectory} from "../../../../scripts/paths";
     import {open} from "@tauri-apps/api/shell";
 
     function modListCompare(a: Mod, b: Mod) {

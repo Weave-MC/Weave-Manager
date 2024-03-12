@@ -1,9 +1,9 @@
 <script lang="ts">
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import type {LaunchProfile} from "../../../../scripts/types";
-    import {launchProfiles} from "../../../../scripts/store";
+    import {launchProfiles} from "../../../../scripts/stores";
     import {invoke} from "@tauri-apps/api/tauri";
-    import {deleteLaunchProfile, loadModProfile} from "../../../../scripts/shared";
+    import {deleteLaunchProfile, loadModProfile} from "../../../../scripts/components";
     
     function profileSettings(profile: LaunchProfile) {
         

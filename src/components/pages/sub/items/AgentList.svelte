@@ -2,9 +2,9 @@
     import type {Agent} from "../../../../scripts/types"
     import VerticalScroll from "../../../util/VerticalScroll.svelte";
     import ButtonBar from "../../../util/ButtonBar.svelte";
-    import {agentList} from "../../../../scripts/store";
+    import {agentList} from "../../../../scripts/stores";
     import {renameFile} from "@tauri-apps/api/fs";
-    import {getAgentsDirectory} from "../../../../scripts/shared";
+    import {getAgentsDirectory} from "../../../../scripts/paths";
     import {open} from "@tauri-apps/api/shell";
 
     function agentListCompare(a: Agent, b: Agent) {
