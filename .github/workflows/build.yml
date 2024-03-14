@@ -1,52 +1,58 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Build
+name: Release
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-  release:
-    types: [ published ]
-
-permissions:
-  contents: write
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
-  build:
+  release:
+    permissions:
+      contents: write
     strategy:
+      fail-fast: false
       matrix:
         platform: [macos-latest, ubuntu-20.04, windows-latest]
-
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install NodeJS
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-        cache: 'npm'
+      - name: Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      
-    - name: Install dependencies (ubuntu only)
-      if: matrix.platform == 'ubuntu-20.04'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
-    - run: npm i
-    
-    - name: ${{ github.event_name == 'release' && 'Build + Release' || 'Build' }}
-      uses: tauri-apps/tauri-action@v0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-        TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-      with:
-        releaseId: ${{ github.event.release.id }}
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install frontend dependencies
+        uses: tauri-apps/tauri-action@v0
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Weave Manager v_VERSION__'
+          releaseBody: 'See the assets to download and install this version of Weave Manager'
+          releaseDraft: true
+          prerelease: false
