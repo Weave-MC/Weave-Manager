@@ -94,7 +94,7 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI0M0NFOEI0NzdEREREOTUKUldTVjNkMTN0T2c4Sko3OGl6VGUxYkc4M2FzUFVoZFphZEtZaEVkWWphM0l6bzUzVzN4Z1cwVlMK"
     },
     "systemTray": {
-      "iconPath": "icons/icon.ico"
+      "iconPath": "icons/icon.png"
     },
     "windows": [
       {
