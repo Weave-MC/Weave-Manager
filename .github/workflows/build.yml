@@ -53,7 +53,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Weave Manager v_VERSION__'
+          releaseName: 'Weave Manager v__VERSION__'
           releaseBody: 'See the assets to download and install this version of Weave Manager'
           releaseDraft: true
           prerelease: false
