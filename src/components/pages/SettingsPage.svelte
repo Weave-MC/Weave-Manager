@@ -6,6 +6,7 @@
     import {writeTextFile} from "@tauri-apps/api/fs";
     import {getWeaveDirectory} from "../../scripts/paths";
     import SelectionSetting from "../util/settings/SelectionSetting.svelte";
+    import {enable, isEnabled, disable} from "tauri-plugin-autostart-api"
 
     let updateConfirmation: UpdateConfirmation
 
@@ -21,6 +22,13 @@
     }
 
     async function confirmUpdate() {
+        if (temporarySettings.startup_run != $settings.startup_run) {
+            if (temporarySettings.startup_run)
+                await enable()
+            else
+                await disable()
+        }
+
         temporarySettings.theme = selectedTheme.value
         $settings = {...temporarySettings}
 

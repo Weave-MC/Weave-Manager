@@ -30,7 +30,7 @@
 </script>
 
 <dialog bind:this={popup} class="fixed top-0 bottom-0 left-0 right-0 {$$props.class} bg-overlay rounded-xl select-none" on:mousedown={handleClick} on:keydown>
-    <div id="content" class="w-full h-full flex flex-col justify-between items-center text-text px-2 pb-2 pt-1 gap-1">
+    <div id="content" class="w-full h-full table text-center justify-between items-center text-text px-2 pb-2 pt-1 gap-1">
         <h1 class="text-lg">{title}</h1>
         <div id="content" class="relative h-full w-full bg-base rounded-xl">
             <slot/>

@@ -6,8 +6,7 @@
     let errors: string[] = []
 
     window.addEventListener("unhandledrejection", (e) => {
-        console.log("error")
-        errors = [...errors, e.reason]
+        errors = [...errors, e.reason ? e.reason : e.detail.reason]
         errorModal.show()
     })
 

@@ -8,8 +8,26 @@
     function profileSettings(profile: LaunchProfile) {
         
     }
+
+    let cooldown: number
     
     async function launchProfile(profile: LaunchProfile) {
+        const now = Date.now()
+        if (now - cooldown < 2500) {
+            // 2.5 second cooldown between launches
+            window.dispatchEvent(
+                new CustomEvent("unhandledrejection", {
+                    detail: {
+                        promise: undefined,
+                        reason: new Error(`Launch cooldown active. ${(2.5 - (now - cooldown) / 1000).toFixed(2)}s`)
+                    }
+                })
+            )
+            return
+        }
+
+        cooldown = Date.now()
+
         if (profile.mod_profile)
             await loadModProfile(profile.mod_profile)
 
