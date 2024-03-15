@@ -175,7 +175,7 @@ fn fetch_minecraft_processes(app_state: State<AppState>) -> Vec<MinecraftProcess
             }
 
             // Rudimentary check for if the process is Minecraft
-            if !proc.cmd().iter().any(|arg| arg.contains(".minecraft")) {
+            if !proc.cmd().iter().any(|arg| arg.contains(Some("minecraft" | ".minecraft"))) {
                 return None
             }
 
