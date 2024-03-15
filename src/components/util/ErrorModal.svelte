@@ -27,7 +27,7 @@
 
 <PopUp bind:this={errorModal} title="Weave has encountered an error" on:close={handleClose}>
     {#if errors.length > 0}
-        <div class="max-w-[30rem] flex py-5 px-5">
+        <div class="max-w-[30rem] min-h-[5rem] flex py-5 px-5">
             <h1 class="text-lg">{errors[0]}</h1>
         </div>
     {/if}
