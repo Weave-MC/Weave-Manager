@@ -32,7 +32,7 @@
     })
 </script>
 
-<main id="main" class="theme-{$settings.theme.replace('_', '-').toLowerCase()} absolute w-screen h-screen overflow-clip text-text bg-crust select-none">
+<main id="main" class="theme-moonlight absolute w-screen h-screen overflow-clip text-text bg-crust select-none">
     <HeaderBar/>
     <SideBar bind:selectedPage/>
     <div id="content" class="fixed top-14 left-14 right-0 bottom-0 flex flex-col p-3 gap-3">

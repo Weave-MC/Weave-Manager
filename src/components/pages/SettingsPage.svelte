@@ -42,13 +42,13 @@
 </script>
 
 <div id="settings" class="relative w-full h-full px-24 py-6 flex flex-col overflow-y-scroll gap-6">
-    <SelectionSetting
-            title="Theme Selection"
-            description=""
-            options={themesArray}
-            bind:value={selectedTheme}
-            on:select={() => updateConfirmation.display()}
-    />
+<!--    <SelectionSetting-->
+<!--            title="Theme Selection"-->
+<!--            description=""-->
+<!--            options={themesArray}-->
+<!--            bind:value={selectedTheme}-->
+<!--            on:select={() => updateConfirmation.display()}-->
+<!--    />-->
     <CheckboxSetting
             bind:enabled={temporarySettings.auto_update}
             title="Auto Update"
