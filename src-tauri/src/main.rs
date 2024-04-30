@@ -217,6 +217,7 @@ fn launch(profile: LaunchProfile, app_state: State<AppState>, app: tauri::AppHan
 
     // Insert the weave agent to the command line
     let mut cmd = mc.cmd;
+    cmd.retain(|s| !s.starts_with("-Dlog4j"));
     cmd.insert(1, format!("-javaagent:{}", weave_loader_path.to_str().unwrap()));
 
     // piped outputs
